@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.15)
+project(Learntemplate)
+set(CMAKE_CXX_STANDARD 20)
+ADD_SUBDIRECTORY(src ../bin)
+MESSAGE(STATUS "this is binary dir" ${PROJECT_BINARY_DIR})
+MESSAGE(STATUS "this is binary dir" ${PROJECT_SOURCE_DIR})
