@@ -1128,6 +1128,113 @@ namespace _6_1_1_
     }
 }
 
+namespace _6_2_0_
+{
+    class Person
+    {
+    public:
+        explicit Person(std::string const& n) : name(n)
+        {
+            std::cout << "copying string-CONSTR for '" << name << "'" << std::endl;
+        }
+
+        explicit Person(std::string&& n) : name(std::move(n))
+        {
+            std::cout << "moving string-CONSTR for '" << name << "'" << std::endl;
+        }
+
+        Person(Person const& p) : name(p.name)
+        {
+            std::cout << "COPY-CONSTR Person'" << name << "'\n";
+        }
+
+        Person(Person&& p) :name(std::move(p.name))
+        {
+            std::cout << "MOVE-CONSTR Person ¡¯" << name << "¡¯\n";
+        }
+    private:
+        std::string name;
+    };
+}
+
+namespace _6_2_1_
+{
+    class Person;
+    template<typename T>
+    using EnableIfString = std::enable_if_t<std::is_convertible_v<T, std::string>>;
+
+    template<typename T>
+    using EnableIfPerson = std::enable_if_t<std::is_convertible_v<T, Person>>;
+
+    class Person
+    {
+    private:
+        std::string name;
+    public:
+        template<typename STR,typename = EnableIfString<STR> /*std::enable_if_t<std::is_convertible_v<STR,std::string>>*/>
+        explicit Person(STR&& n) :name(std::forward<STR>(n))
+        {
+            std::cout << "TMPL-CONSTR for '" << name << "'\n";
+        }
+
+        Person(Person const& p) : name(p.name)
+        {
+            std::cout << "COPY-CONSTR Person'" << name << "'\n";
+        }
+
+        Person(Person&& p) : name(std::move(p.name))
+        {
+            std::cout << "Move-CONSTR Person'"<< name << "'\n";
+        }
+    };
+}
+
+namespace _6_5_0_
+{
+    class Person;
+    template<typename T>
+    concept ConvertibleToString = std::is_convertible_v<T, std::string>;
+
+    template<typename T>
+    concept ConvertibleToPerson = std::is_convertible_v< T, Person>;
+
+    class Person
+    {
+    private:
+        std::string name;
+    public:
+        template<typename STR>
+        requires ConvertibleToString<STR>
+        explicit Person(STR&& n) :name(std::forward<STR>(n))
+        {
+            std::cout << "TMPL-CONSTR for '" << name << "'\n";
+        }
+
+        template<typename T>
+        requires ConvertibleToPerson<T>
+            Person(T&& p) :name(p.name)
+        {
+            std::cout << "TMPL-Copy Person for '" << name << "'\n";
+        }
+
+        Person(Person& p) : name(p.name)
+        {
+            std::cout << "normal Copy Person for '" << name << "'\n";
+        }
+
+        Person(Person&& p) : name(p.name)
+        {
+            std::cout << "rvalue Copy Person for '" << name << "'\n";
+        }
+
+        Person(const Person& p) : name(p.name)
+        {
+            std::cout << "const Copy Person for '" << name << "'\n";
+        }
+
+    };
+}
+
 int main(  )
 {
     {
@@ -1367,6 +1474,36 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
             f(c);
             f(X());
             f(std::move(v));
+        }
+
+        {
+            using namespace _6_2_0_;
+            std::string s = "sname";
+            Person p1(s);
+            Person p2("tmp");
+            Person p3(p1);
+            Person p4(std::move(p1));
+        }
+        std::cout << "--------------------------------" << std::endl;
+        {
+            using namespace _6_2_1_;
+
+            std::string s = "sname";
+            Person p1(s);
+            Person p2("tmp");
+            Person p3(p1);
+            Person p4(std::move(p1));
+        }
+        std::cout << "--------------------------------" << std::endl;
+        {
+            using namespace _6_5_0_;
+            std::string s = "sname";
+            Person p1(s);
+            Person p2("tmp");
+            Person p3( p1 );
+            Person p4{ std::move(p1) };
+            const Person p5{ "1111" };
+            Person p6(p5);
         }
     }
     
