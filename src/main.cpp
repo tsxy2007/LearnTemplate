@@ -1177,6 +1177,12 @@ namespace _6_2_1_
             std::cout << "TMPL-CONSTR for '" << name << "'\n";
         }
 
+        template<typename T,std::enable_if_t<std::is_convertible_v<T, Person>> >
+            Person(T&& p) :name(p.name)
+        {
+            std::cout << "TMPL-Copy Person for '" << name << "'\n";
+        }
+
         Person(Person const& p) : name(p.name)
         {
             std::cout << "COPY-CONSTR Person'" << name << "'\n";
@@ -1504,6 +1510,29 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
             Person p4{ std::move(p1) };
             const Person p5{ "1111" };
             Person p6(p5);
+        }
+        {
+
+            class T
+            {
+            public:
+                T&& operator++(int)
+                {
+                    return  std::move(*this);
+                }
+                T& operator++()
+                {
+                    return *this;
+                }
+
+            };
+
+            T t, t1;
+            ++t = t;
+            t++ = t;
+            t1 = t++;
+            //std::cout << &(t++) << std::endl;
+            //std::cout << &(++t) << std::endl;
         }
     }
     
