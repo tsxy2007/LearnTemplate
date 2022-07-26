@@ -1241,6 +1241,147 @@ namespace _6_5_0_
     };
 }
 
+namespace _7_1_
+{
+    template<typename T>
+    void printV(T arg)
+    {
+
+    }
+
+    std::string returnString()
+    {
+        return "hi";
+    }
+}
+
+namespace _7_2_1_
+{
+    template<typename T>
+    void printR(T const& args)
+    {
+    }
+
+    std::string returnString()
+    {
+        return "hi";
+    }
+}
+
+namespace _7_2_2_
+{
+    //template<typename T,typename = std::enable_if_t<!std::is_const_v<T>>>
+    //void printR(T& args)
+    //{
+    // /*   static_assert(!std::is_const<T>::value, "out parameter of foo<T>(T&) is const");
+    //    if (std::is_array_v<T>) 
+    //    { 
+    //        std::cout << "got array of " << std::extent<T>::value << " elems\n"; 
+    //    }*/
+    //}
+
+    //template<typename T>
+    //void printR(T const& arg)
+    //{
+
+    //}
+
+    template<typename T>
+    void printR(T& args)
+    {
+       //static_assert(!std::is_const<T>::value, "out parameter of foo<T>(T&) is const");
+       ///* if (std::is_array_v<T>)
+       // { 
+       //     std::cout << "got array of " << std::extent<T>::value << " elems\n"; 
+       // }*/
+    }
+
+    template<typename T>
+    requires (!std::is_const_v<T>)
+    void outR(T& args)
+    {
+        if (std::is_array_v<T>)
+        {
+            std::cout << "got array of " << std::extent<T>::value << " elems\n";
+        }
+    }
+    template<typename T>
+    void outR1(T const& args)
+    {
+        if (std::is_array_v<T>)
+        {
+            std::cout << "got array of " << std::extent<T>::value << " elems\n";
+        }
+    }
+
+    template<typename T>
+    void TestR(T& arg)
+    {
+        arg = {};
+    }
+
+    std::string returnString()
+    {
+        return "hi";
+    }
+    const std::string returnConstString()
+    {
+        return "hi";
+    }
+}
+
+namespace _7_2_3_
+{
+    template<typename T>
+    void passR(T&& arg)
+    {
+        //T x; //x 必須初始化
+        //T x{}; //x 必須初始化
+
+    }
+}
+
+namespace _7_3_
+{
+    void printString(std::string const& s)
+    {
+        std::cout << s << std::endl;
+    }
+    template<typename T>
+    void printT(T arg)
+    {
+        printString(arg);
+    }
+}
+
+namespace _7_4_1_
+{
+    template<typename T, std::size_t N1,std::size_t N2>
+    void foo(T(&arg1)[N1], T(&arg2)[N2])
+    {
+        T* pa = arg1;
+        T* bp = arg2;
+    }
+}
+
+namespace _7_4_2_
+{
+    template<typename T, typename = std::enable_if_t<std::is_array_v<T>>>
+    void foo(T&& arg1, T&& arg2)
+    {
+
+    }
+}
+
+namespace _7_5_1_
+{
+    std::shared_ptr<int>& getInt()
+    {
+        std::shared_ptr<int> ip = std::make_shared<int>(10);
+        return ip;
+    }
+}
+
 int main(  )
 {
     {
@@ -1536,6 +1677,84 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
         }
     }
     
+    // ------------------------------------------7----------------------------------------------------------------
+    {
+        //7.1-------------
+        {
+            using namespace _7_1_;
+            std::string s = "hi";
+            _7_1_::printV(s); // 传递了一个lvalue，这会使用std::string的copy constructor。
+            _7_1_::printV(std::string("hi")); //这里传递的是prvalue(随手建立的临时对象或者函数返回的临时对象)，通常状况下编译器会进行参数传递的优化，不会致使copy constructor 
+            _7_1_::printV(returnString());//这里传递的是prvalue(随手建立的临时对象或者函数返回的临时对象)，通常状况下编译器会进行参数传递的优化，不会致使copy constructor 
+            _7_1_::printV(std::move(s));//传递的是xvalue(一个使用过std::move后的对象)，这会调用move constructor。
+            //虽然上面4种状况只有第一种才会调用copy constructor，可是这种状况才是最多见的。
+        }
+        //7.2.1
+        {
 
+            // 本质是通过传递参数的地址实现的。 不会做类型退化。
+            using namespace _7_2_1_;
+            std::string s = "hi";
+            std::string returnString1();
+            
+            printR(s);
+            printR(std::string("hi"));
+            printR(returnString());
+            printR(std::move(s));
+            
+        }
+        {
+            //7.2.2
+            using namespace _7_2_2_;
+            std::string returnString();
+            std::string s = "hi";
+            const std::string& s1 = "";
+            printR(s);/*
+            printR(std::string("hi"));
+            printR(returnString());
+            printR(std::move(s));*/
+            printR(s1);
+            printR(std::move(s1));
+            printR(returnConstString());
+            printR("hi");
+            //int arr[4];
+            //printR(arr);
+
+            //std::string const c = "hi";
+            //outR1(c);
+            //outR1(std::move(c));
+            //outR1("hi");
+        }
+        {
+            //7.2.3
+            using namespace _7_2_3_;
+            std::string s = "hi";
+            passR(s); // T deduced as std::string
+            passR(std::string("hi"));// T deduced as std::string
+            passR(_7_2_2_::returnString());
+            passR(std::move(s));
+            int arr[4];
+            passR(arr);
+            int a;
+            passR(a);
+
+        }
+        //7.3
+        {
+            using namespace _7_3_;
+            std::string s = "hello";
+            printT(s);
+            printT(std::cref(s));
+
+            std::make_pair(1, 2);
+
+        }
+        //7.5
+        {
+            const int& x = 0;
+            auto& y = _7_5_1_::getInt();
+            std::cout << *y.get() << std::endl;
+        }
+    }
     return 0;
 }
