@@ -8,6 +8,7 @@
 #include <cassert>
 #include <unordered_set>
 #include <bitset>
+#include <thread>
 
 namespace _001
 {
@@ -786,7 +787,6 @@ namespace _5_4_
         MyClass<decltype(x1)>::print();//  使用MyClass<T*>
         MyClass<decltype(x2)>::print();//  使用MyClass<T(&)[]>
         MyClass<decltype(x3)>::print();//  使用MyClass<T(&)[]> 万能引用， 引用折叠
-
     }
 }
 
@@ -1046,11 +1046,7 @@ namespace TestSharedPtr
     {
         return std::make_shared<T>(args...);;
    }
-    const auto& test1()
-    {
-        const Base b;
-        return b;
-    }
+
 
     struct FTest
     {
@@ -1238,6 +1234,116 @@ namespace _6_5_0_
             std::cout << "const Copy Person for '" << name << "'\n";
         }
 
+    };
+}
+
+namespace _7_3_0_
+{
+    void printString(std::string& s)
+    {
+        std::cout << s << std::endl;
+    }
+
+    void printteststring(std::string const& s)
+    {
+        std::cout << s << std::endl;
+    }
+
+    template<typename T>
+    void printT(T arg)
+    {
+        printString(arg);
+    }
+
+    struct Date {
+        unsigned int nWeekDay : 3;    // 0..7   (3 bits)
+        unsigned int nMonthDay :6;    // 0..31  (6 bits)
+        //unsigned int : 0;
+        unsigned int nMonth :5;    // 0..12  (5 bits)
+        unsigned int nYear :8;    // 0..100 (8 bits)
+    };
+}
+
+namespace _8_1_1_
+{
+    template<unsigned p,unsigned d>
+    struct DoIsPrime
+    {
+        static constexpr bool value = (p % d != 0) && DoIsPrime<p, d - 1>::value;
+    };
+
+    template<unsigned p>
+    struct DoIsPrime<p,2>
+    {
+        static constexpr bool value = (p % 2 != 0);
+    };
+
+    template<unsigned p>
+    struct IsPrime
+    {
+        static constexpr bool value = DoIsPrime<p, p / 2>::value;
+    };
+
+    template<> struct IsPrime<0> { static constexpr bool value = false; };
+    template<> struct IsPrime<1> { static constexpr bool value = false; };
+    template<> struct IsPrime<2> { static constexpr bool value = true; };
+    template<> struct IsPrime<3> { static constexpr bool value = true; };
+
+    template<int SZ,bool = IsPrime<SZ>::value>
+    struct Helper;
+
+    template<int SZ>
+    struct Helper<SZ, false>
+    {
+        static constexpr bool value = false;
+    };
+
+    template<int SZ>
+    struct Helper<SZ, true>
+    {
+        static constexpr bool value = true;
+    };
+
+
+    class MTest
+    {
+    public:
+        std::vector<int>& operator*()
+        {
+            return a;
+        }
+    private:
+        std::vector<int> a;
+    };
+
+
+}
+
+namespace _8_2_1_
+{
+    constexpr bool doIsPrime(unsigned p, unsigned d)
+    {
+        return d != 2 ? (p % d != 0) && doIsPrime(p, d - 1)  : (p%2!=0);
+    }
+
+    constexpr bool IsPrime(unsigned p)
+    {
+        return p < 4 ? !(p < 2) : doIsPrime(p, p / 2);
+    }
+
+    template<int SZ, bool = IsPrime(SZ)>
+    struct Helper;
+
+    template<int SZ>
+    struct Helper<SZ,false>
+    {
+        static constexpr bool value = false;
+    };
+
+    template<int SZ>
+    struct Helper<SZ, true>
+    {
+        static constexpr bool value = true;
     };
 }
 
@@ -1533,9 +1639,56 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
             t1 = t++;
             //std::cout << &(t++) << std::endl;
             //std::cout << &(++t) << std::endl;
+
+            auto reft = std::cref<>(t);
+            auto reft2 = std::cref(reft);
+            std::cout << "reft size = " << sizeof(reft) << std::endl;
+            std::cout << std::boolalpha;
+            std::cout << std::negation<std::bool_constant<true>>::value << '\n';
+            std::cout << std::negation<std::bool_constant<false>>::value << '\n';
+            std::conditional_t<false,int ,float> conditional_a = 1.1;
+            std::cout << conditional_a << std::endl;
         }
     }
     
+    // ------------------------------------------7----------------------------------------------------------------
+    {
+        /// 7_3_
+        {
+            std::string s = "hello";
+            _7_3_0_::printString(s);
+            _7_3_0_::printT(std::ref(s));
+            //_7_3_0_::printString(std::move(s));error 不允许将临时变量(prvalue)或者通过std::move()处理过的已存在的(xvalue)用作其参数。
+            std::cout << sizeof(_7_3_0_::Date)<<":" << sizeof(unsigned int) << std::endl;
+        }
+    }
 
+    // ------------------------------------------8----------------------------------------------------------------
+    {
+        {
+            std::cout << "模板元编程:" << _8_1_1_::IsPrime<11>::value << std::endl;
+            std::cout << "模板元编程 helper:" << _8_1_1_::Helper<11>::value << std::endl;
+            std::cout << "模板元编程:" << _8_1_1_::IsPrime<10>::value << std::endl;
+            std::cout << "模板元编程 helper:" << _8_1_1_::Helper<10>::value << std::endl;
+            unsigned a = 10;
+            std::cout << "constexpr:" << _8_2_1_::IsPrime(11) << std::endl; //编译期
+            std::cout << "constexpr helper:" << _8_2_1_::Helper<11>::value << std::endl; //编译期
+            std::cout << "constexpr:" << _8_2_1_::IsPrime(a) << std::endl; // 运行期
+            std::cout << "constexpr helper:" << _8_2_1_::Helper<10>::value << std::endl;
+
+            std::allocator<int> x;
+            std::vector<int> x1{ 1,2,3,4,5,6 };
+            std::cout << std::size(x1) << std::endl;
+
+            _8_1_1_::MTest test;
+            (*test).push_back(1);
+            (*test).push_back(2);
+            (*test).push_back(3);
+            for (size_t i = 0; i < (*test).size(); i++)
+            {
+                std::cout << (*test)[i] << std::endl;
+            }
+        }
+    }
     return 0;
 }
