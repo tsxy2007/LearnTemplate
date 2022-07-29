@@ -391,7 +391,7 @@ namespace _3_1_
     Stack<T, Maxsize>::Stack() : 
         numElems(0)
     {
-
+        elems.empty();
     }
 
     template<typename T,std::size_t Maxsize>
@@ -1486,6 +1486,122 @@ namespace _8_2_1_
     {
         static constexpr bool value = true;
     };
+
+    // 运行期
+    bool fiftySevenIsPrime()
+    {
+        return IsPrime(57);
+    }
+
+    const bool b1 = IsPrime(13);
+}
+
+namespace _8_2_2_
+{
+    constexpr bool isPrime(unsigned int p)
+    {
+        for (unsigned i = 2; i <= p/2; i++)
+        {
+            if (p % i == 0)
+            {
+                return false;
+            }
+        }
+        return p > 1;
+    }
+
+    const bool b1 = isPrime(13);
+
+    // 运行期
+    bool fiftySevenIsPrime() 
+    {
+        return isPrime(57);
+    }
+}
+
+namespace _8_4_0_
+{
+    template<typename T,unsigned N>
+    std::size_t len(T(&)[N])
+    {
+        return N;
+    }
+
+    template<typename T>
+    typename T::size_type len(T const& t)
+    {
+        return t.size();
+    }
+
+    std::size_t len(...)
+    {
+        return 0;
+    }
+}
+
+
+namespace _8_4_1_
+{
+    template<typename T, unsigned N>
+    std::size_t len(T(&)[N])
+    {
+        return N;
+    }
+
+    template<typename T>
+    auto len(T const& t)->decltype((void)t.size(),T::size_type())
+    {
+        return t.size();
+    }
+
+    std::size_t len(...)
+    {
+        return 0;
+    }
+}
+
+namespace _8_5_
+{
+    template <typename T, typename ... Types>
+    void print(T const& firstArg, Types const& ... args)
+    {
+        std::cout << firstArg;
+        if constexpr (sizeof...(args))
+        {
+            std::cout << ';';
+            print(args...);
+        }
+        else
+        {
+            std::cout << std::endl;
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------------------------------
+namespace _11_1_2_
+{
+    class MyClass
+    {
+    public:
+        void memfunc(int i) const
+        {
+            std::cout << "MyClass::memfunc() call for:[" << i << "]" << std::endl;
+        }
+    private:
+
+    };
+
+    template<typename Iter ,typename Callable,typename... Args>
+    void foreach(Iter current, Iter end, Callable op, Args const&... args)
+    {
+        while (current != end)
+        {
+            std::invoke(op, args..., *current);
+            ++current;
+        }
+    }
+
 }
 
 int main(  )
@@ -1692,6 +1808,7 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
             fStack.push(7.3);
             std::cout << "fStack.top():" << fStack.top() << std::endl;
 
+            // 大量的warning
             fStack = iStack;
             std::cout << "fStack.top():" << fStack.top() << std::endl;
         }
@@ -1884,16 +2001,35 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
     }
     // ------------------------------------------8----------------------------------------------------------------
     {
+        // 1,2,3
         {
             std::cout << "模板元编程:" << _8_1_1_::IsPrime<11>::value << std::endl;
             std::cout << "模板元编程 helper:" << _8_1_1_::Helper<11>::value << std::endl;
             std::cout << "模板元编程:" << _8_1_1_::IsPrime<10>::value << std::endl;
             std::cout << "模板元编程 helper:" << _8_1_1_::Helper<10>::value << std::endl;
-            unsigned a = 10;
-            std::cout << "constexpr:" << _8_2_1_::IsPrime(11) << std::endl; //编译期
-            std::cout << "constexpr helper:" << _8_2_1_::Helper<11>::value << std::endl; //编译期
-            std::cout << "constexpr:" << _8_2_1_::IsPrime(a) << std::endl; // 运行期
-            std::cout << "constexpr helper:" << _8_2_1_::Helper<10>::value << std::endl;
+            {
+                unsigned a = 10;
+                constexpr bool isprime1 = _8_2_1_::IsPrime(11);
+                std::cout << "constexpr:" << isprime1 << std::endl; //编译期
+                std::cout << "constexpr:" << _8_2_1_::IsPrime(11) << std::endl; //运行期
+                std::cout << "constexpr helper:" << _8_2_1_::Helper<11>::value << std::endl; //编译期
+                std::cout << "constexpr:" << _8_2_1_::IsPrime(a) << std::endl; // 运行期
+                std::cout << "constexpr helper:" << _8_2_1_::Helper<10>::value << std::endl;
+
+                std::cout << "_8_2_1_::constexpr b1:" << _8_2_1_::b1 << std::endl;
+                std::cout << "_8_2_1_::constexpr fiftySevenIsPrime:" << _8_2_1_::fiftySevenIsPrime()<< std::endl;
+            }
+            {
+                unsigned a = 10;
+                constexpr bool isprime1 = _8_2_2_::isPrime(11);//编译期
+                bool isprime2 = _8_2_2_::isPrime(a);
+                std::cout << "_8_2_2_constexpr:" << isprime1 << std::endl; //编译期
+                std::cout << "_8_2_2_constexpr:" << _8_2_2_::isPrime(11) << std::endl; //运行期
+                std::cout << "_8_2_2_constexpr:" << isprime2 << std::endl; // 运行期
+                std::cout << "_8_2_2_::constexpr b1:" << _8_2_2_::b1 << std::endl;
+                std::cout << "_8_2_2_::constexpr fiftySevenIsPrime:" << _8_2_2_::fiftySevenIsPrime() << std::endl;
+
+            }
 
             std::allocator<int> x;
             std::vector<int> x1{ 1,2,3,4,5,6 };
@@ -1907,7 +2043,58 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
             {
                 std::cout << (*test)[i] << std::endl;
             }
+
+            
         }
+        //8.4
+        {
+            // 数组
+            int a[10];
+            std::cout << "_8_4_0_ no size():" << _8_4_0_::len(a) << std::endl;
+            std::cout << "_8_4_0_ no size():" << _8_4_0_::len("tmp") << std::endl;
+            // 其他数据结构
+            std::vector<int> v;
+            v.push_back(1);
+            std::cout << "_8_4_0_ has size():" << _8_4_0_::len(v) << std::endl;
+            // 指针
+            int* p = new int(0);
+            std::cout << "_8_4_0_ has point:" << _8_4_0_::len(p) << std::endl;
+            // allocator 没有匹配项
+            std::allocator<int> x;
+            //std::cout << "_8_4_0_ allocator:" << _8_4_0_::len(x) << std::endl;
+        }
+        //4.1
+        {
+            // 数组
+            int a[10];
+            std::cout << "_8_4_1_ no size():" << _8_4_1_::len(a) << std::endl;
+            std::cout << "_8_4_1_ no size():" << _8_4_1_::len("tmp") << std::endl;
+            // 其他数据结构
+            std::vector<int> v;
+            v.push_back(1);
+            std::cout << "_8_4_1_ has size():" << _8_4_1_::len(v) << std::endl;
+            // 指针
+            int* p = new int(0);
+            std::cout << "_8_4_1_ has point:" << _8_4_1_::len(p) << std::endl;
+            // allocator 没有匹配项
+            std::allocator<int> x;
+            std::cout << "_8_4_1_ allocator:" << _8_4_1_::len(x) << std::endl;
+
+            _8_5_::print(1);
+        }
+    }
+
+    //------------------------------------------11----------------------------------------------------------------
+    {
+
+        std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
+        _11_1_2_::foreach(primes.begin(), primes.end(), [](int i) {
+            std::cout << "输出：" << i << std::endl;
+            });
+        _11_1_2_::MyClass obj;
+        _11_1_2_::foreach(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj);
+
+        std::addressof(obj);
     }
     return 0;
 }
