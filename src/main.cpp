@@ -1579,21 +1579,50 @@ namespace _8_5_
 }
 
 // -----------------------------------------------------------------------------------------------------
+namespace _11_1_1_
+{
+    template<typename Iter,typename Callable>
+    void foreach(Iter current, Iter end, Callable op)
+    {
+        while (current != end)
+        {
+            op(*current);
+            ++current;
+        }
+    }
+
+    void func(int i)
+    {
+        std::cout << "func() called for: " << i << std::endl;
+    }
+
+    class FuncObj
+    {
+    public:
+        void operator()(int i) const
+        {
+            std::cout << "FuncObj::op() called for : " << i << std::endl;
+        }
+
+    };
+
+}
+
 namespace _11_1_2_
 {
     class MyClass
     {
     public:
-        void memfunc(int i) const
+        void memfunc(std::string a, int i) const
         {
-            std::cout << "MyClass::memfunc() call for:[" << i << "]" << std::endl;
+            std::cout << "MyClass::memfunc() call for:[" << i << "]" << a << std::endl;
         }
     private:
 
     };
 
     template<typename Iter ,typename Callable,typename... Args>
-    void foreach(Iter current, Iter end, Callable op, Args const&... args)
+    void foreach(Iter current, Iter end, Callable op, Args const... args)
     {
         while (current != end)
         {
@@ -1602,6 +1631,20 @@ namespace _11_1_2_
         }
     }
 
+    void func(int i)
+    {
+        std::cout << "func() called for: " << i << std::endl;
+    }
+
+    class FuncObj
+    {
+    public:
+        void operator()(std::string a, int i) const
+        {
+            std::cout << "FuncObj::op(" << a << ") called for : " << i << std::endl;
+        }
+
+    };
 }
 
 int main(  )
@@ -2086,15 +2129,30 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
 
     //------------------------------------------11----------------------------------------------------------------
     {
+        // 11.1.1
+        {
+            std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
+            _11_1_1_::foreach(primes.begin(), primes.end(), _11_1_1_::func);
+            _11_1_1_::FuncObj funcObj;
+            _11_1_1_::foreach(primes.begin(), primes.end(), funcObj);
+        }
+        // 11.1.2
+        {
+            std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
+            _11_1_2_::foreach(primes.begin(), primes.end(), [](std::string a, int i) {
+                std::cout << "Êä³ö£º" << a << ":" << i << std::endl;
+                }, "hello");
+            _11_1_2_::MyClass obj;
+            _11_1_2_::foreach(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
 
-        std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
-        _11_1_2_::foreach(primes.begin(), primes.end(), [](int i) {
-            std::cout << "Êä³ö£º" << i << std::endl;
-            });
-        _11_1_2_::MyClass obj;
-        _11_1_2_::foreach(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj);
 
-        std::addressof(obj);
+
+            _11_1_2_::foreach(primes.begin(), primes.end(), _11_1_2_::func);
+            _11_1_2_::FuncObj funcObj;
+            _11_1_2_::foreach(primes.begin(), primes.end(), funcObj,"_11_1_2_");
+
+            std::addressof(obj);
+        }
     }
     return 0;
 }
