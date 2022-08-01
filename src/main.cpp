@@ -1647,6 +1647,49 @@ namespace _11_1_2_
     };
 }
 
+namespace _11_1_3_
+{
+    template<typename Callable,typename ... Types>
+    decltype(auto) call(Callable&& op, Types&&... args)
+    {
+        if constexpr(std::is_same_v<std::invoke_result_t<Callable,Types...>,void>)
+        {
+            std::invoke(std::forward<Callable>(op), std::forward<Types>(args)...);
+            return;
+        }
+        else
+        {
+            return std::invoke(std::forward<Callable>(op), std::forward<Types>(args)...);
+        }
+    }
+}
+
+namespace _11_2_1_
+{
+    template<typename T>
+    class C
+    {
+        static_assert(!std::is_same_v<std::remove_cv_t<T>, void>, "invalid instantiation of class C for void Type");
+    public:
+        template<typename V>
+        void f(V&& v)
+        {
+            if constexpr(std::is_reference_v<T>)
+            {
+
+            }
+            if constexpr(std::is_convertible_v<std::decay_t<V>,T>)
+            {
+
+            }
+            if constexpr (std::has_virtual_destructor_v<V>)
+            {
+
+            }
+        }
+    };
+}
+
 int main(  )
 {
     {
@@ -2133,8 +2176,12 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
         {
             std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
             _11_1_1_::foreach(primes.begin(), primes.end(), _11_1_1_::func);
+            _11_1_1_::foreach(primes.begin(), primes.end(), &_11_1_1_::func);
             _11_1_1_::FuncObj funcObj;
             _11_1_1_::foreach(primes.begin(), primes.end(), funcObj);
+            _11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
+                std::cout << "lambda func [" << i << "]" << std::endl;
+                });
         }
         // 11.1.2
         {
@@ -2148,10 +2195,26 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
 
 
             _11_1_2_::foreach(primes.begin(), primes.end(), _11_1_2_::func);
-            _11_1_2_::FuncObj funcObj;
+            _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
             _11_1_2_::foreach(primes.begin(), primes.end(), funcObj,"_11_1_2_");
 
+            //std::for_each_n(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
             std::addressof(obj);
+        }
+        //11.1.3
+        {
+            auto func = []() ->std::string
+            {
+                return "hello world";
+            };
+
+            auto func1 = [](std::string arg1,int i) 
+            {
+                std::cout << "hello world 2" << arg1 << i << std::endl;
+            };
+
+            std::cout << _11_1_3_::call(func) << std::endl;
+            _11_1_3_::call(func1, "11111111111", 3333);
         }
     }
     return 0;
