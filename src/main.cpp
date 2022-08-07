@@ -1643,6 +1643,7 @@ namespace _11_1_2_
         {
             std::cout << "FuncObj::op(" << a << ") called for : " << i << std::endl;
         }
+        FuncObj() {}
 
     };
 }
@@ -2148,10 +2149,9 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
 
 
             _11_1_2_::foreach(primes.begin(), primes.end(), _11_1_2_::func);
-            _11_1_2_::FuncObj funcObj;
-            _11_1_2_::foreach(primes.begin(), primes.end(), funcObj,"_11_1_2_");
-
-            std::addressof(obj);
+            _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
+            //_11_1_2_::foreach(primes.begin(), primes.end(), funcObj,"_11_1_2_");
+            int i = 0;
         }
     }
     return 0;
