@@ -1539,7 +1539,6 @@ namespace _8_4_0_
     }
 }
 
-
 namespace _8_4_1_
 {
     template<typename T, unsigned N>
@@ -1662,23 +1661,33 @@ namespace _11_1_3_
             return std::invoke(std::forward<Callable>(op), std::forward<Types>(args)...);
         }
     }
+
+    template<typename Iter, typename Callable, typename... Args>
+    void foreach(Iter current, Iter end, Callable op, Args const... args)
+    {
+        while (current != end)
+        {
+            call(op, args..., *current);
+            ++current;
+        }
+    }
 }
 
-namespace _11_2_1_
+namespace _11_2_1
 {
     template<typename T>
     class C
     {
-        static_assert(!std::is_same_v<std::remove_cv_t<T>, void>, "invalid instantiation of class C for void Type");
+        static_assert(!std::is_same_v<std::remove_cv_t<T>, void>, "invalid instantiation of class C for void type");
     public:
         template<typename V>
         void f(V&& v)
         {
-            if constexpr(std::is_reference_v<T>)
+            if constexpr (std::is_reference_v<T>)
             {
 
             }
-            if constexpr(std::is_convertible_v<std::decay_t<V>,T>)
+            if constexpr (std::is_convertible_v<std::decay_t<V>, T>)
             {
 
             }
@@ -1690,6 +1699,70 @@ namespace _11_2_1_
     };
 }
 
+namespace _11_4_
+{
+    template<typename T>
+    void tmplParamIsReference(T)
+    {
+        std::cout << "T is reference: " << std::is_reference_v<T> << std::endl;
+    }
+
+    template<typename T, T Z = T{} >
+    class RefMem
+    {
+    public:
+        RefMem() : zero{ Z } {}
+    private:
+        T zero;
+    };
+
+    template<typename T,int& SZ>
+    class Arr
+    {
+    private:
+        std::vector<T> elems;
+    public:
+        Arr() : elems(SZ)
+        { 
+           
+            //use current SZ as initial vector size 
+        }
+
+        void print() const
+        {
+            for (int i = 0; i < SZ; ++i)
+            {
+                //loop over SZ elements 
+                std::cout << elems[i] << ' ';
+            }
+        }
+    };
+}
+
+namespace _11_5_
+{
+    
+    template<typename T>
+    class Cont
+    {
+    private:
+        T* elems;
+    public:
+        template<typename D = T>
+        typename std::conditional_t<std::is_move_constructible_v<D>,T&&,T&> foo() //
+        {
+
+        }
+    };
+
+    struct Node
+    {
+        std::string value;
+        Cont<Node> next;
+    };
+}
+
+int size = 10;
 int main(  )
 {
     {
@@ -2200,6 +2273,9 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
 
             //std::for_each_n(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
             std::addressof(obj);
+
+            std::forward<_11_1_2_::MyClass>(obj);
+            std::move(obj);
         }
         //11.1.3
         {
@@ -2215,6 +2291,59 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
 
             std::cout << _11_1_3_::call(func) << std::endl;
             _11_1_3_::call(func1, "11111111111", 3333);
+
+            std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
+            _11_1_3_::foreach(primes.begin(), primes.end(), [](int i) {
+                std::cout <<"---------" << i << std::endl;
+            });
+
+            _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
+            _11_1_3_::foreach(primes.begin(), primes.end(), funcObj, "_11_1_3_");
+        }
+        // 二進制操作
+        {
+
+            auto func = [](int NumHandles, int Offset, int& a) {
+                a |= ((1 << NumHandles) - 1) << Offset;
+            };
+            int a = 0;
+            func(1, 2, a);
+            func(2, 0, a);
+            //func(1, 5, a);
+            uint32_t index;
+            _BitScanReverse((unsigned long*)&index, a);
+            std::cout <<"从高位向低位搜索" << index << std::endl;
+            uint32_t index1;
+            _BitScanForward((unsigned long*)&index1, a);
+            std::cout <<"从低位向高位搜索" << index1 << std::endl;
+        }
+
+        // 11.4
+        {
+            using namespace _11_4_;
+            std::cout << std::boolalpha;
+            int i;
+            int& r = i;
+
+            tmplParamIsReference(i);
+            tmplParamIsReference(r);
+            tmplParamIsReference<int&>(i);
+            tmplParamIsReference<int&>(r);
+
+            RefMem<int> rm1, rm2;
+            rm1 = rm2;
+
+            //RefMem<int&> rm3; // 需要左值
+            //RefMem<int&, 0>rm4; // 不能从int 转换成int&
+
+            //Arr<int&, size> x;// error 编译错误在vector;
+            Arr<int, size> y;
+            y.print();
+            size += 100; //modifies SZ in Arr<>
+            y.print();// run-time ERROR: invalid memory access: loops over 120 elements
+
+            std::pair<int, int>a;
+
         }
     }
     return 0;
