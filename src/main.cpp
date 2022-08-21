@@ -1539,7 +1539,6 @@ namespace _8_4_0_
     }
 }
 
-
 namespace _8_4_1_
 {
     template<typename T, unsigned N>
@@ -1761,6 +1760,647 @@ namespace _11_5_
     {
         std::string value;
         Cont<Node> next;
+    };
+}
+
+namespace _19_1_1_
+{
+    template<typename T>
+    T accum(T const* beg, T const* end)
+    {
+        T total{};
+        while (beg != end)
+        {
+            total += *beg;
+            ++beg;
+        }
+        return total;
+    }
+}
+
+namespace _19_1_2_
+{
+    template<typename T>
+    struct AccumulationTraits;
+
+    template<>
+    struct AccumulationTraits<char>
+    {
+        using Acct = int;
+        static Acct const zero = 0;
+    };
+
+    template<>
+    struct AccumulationTraits<short>
+    {
+        using Acct = int;
+        static Acct const zero = 0;
+    };
+
+    template<>
+    struct AccumulationTraits<int>
+    {
+        using Acct = long;
+        static Acct const zero = 0;
+    };
+
+    template<typename T>
+    auto accum(T  const* beg, T const* end)
+    {
+        using AccT = typename AccumulationTraits<T>::Acct;
+        AccT total = AccumulationTraits<T>::zero;
+        while (beg != end)
+        {
+            total += *beg;
+            ++beg;
+        }
+        return total;
+    }
+}
+
+namespace _19_1_2_1411_
+{
+    struct BigInt
+    {
+        int value = 0;
+
+        BigInt operator+(const BigInt& otherr) const
+        {
+            return { value + otherr.value };
+        }
+
+        BigInt operator+=(const BigInt& otherr)
+        {
+            value += otherr.value;
+            return *this;
+        }
+
+        BigInt operator/(const int & num) const
+        {
+            return { value / num };
+        }
+    };
+
+    template<typename T>
+    struct AccumulationTraits;
+
+    template<>
+    struct AccumulationTraits<char>
+    {
+        using Acct = int;
+        static constexpr Acct zero()
+        {
+            return 0;
+        }
+    };
+
+    template<>
+    struct AccumulationTraits<short>
+    {
+        using Acct = int;
+        static constexpr Acct zero()
+        {
+            return 0;
+        }
+    };
+
+    template<>
+    struct AccumulationTraits<int>
+    {
+        using Acct = long;
+        static constexpr Acct zero()
+        {
+            return 0;
+        }
+    };
+
+    template<>
+    struct AccumulationTraits<unsigned int>
+    {
+        using Acct = unsigned long;
+        static constexpr Acct zero()
+        {
+            return 0;
+        }
+    };
+
+    template<>
+    struct AccumulationTraits<float>
+    {
+        using Acct = double;
+        static constexpr Acct zero()
+        {
+            return 0;
+        }
+    };
+
+    template<>
+    struct AccumulationTraits<BigInt>
+    {
+        using Acct = BigInt;
+        static constexpr Acct zero()
+        {
+            return BigInt{ 0 };
+        }
+    };
+
+    template<typename T>
+    auto accum(T  const* beg, T const* end)
+    {
+        using AccT = typename AccumulationTraits<T>::Acct;
+        AccT total = AccumulationTraits<T>::zero();
+        while (beg != end)
+        {
+            total += *beg;
+            ++beg;
+        }
+        return total;
+    }
+}
+
+namespace _19_1_2_17_
+{
+    struct BigInt
+    {
+        int value = 0;
+
+        BigInt(int v) : value(v) {}
+
+        BigInt operator+(const BigInt& otherr) const
+        {
+            return { value + otherr.value };
+        }
+
+        BigInt operator+=(const BigInt& otherr)
+        {
+            value += otherr.value;
+            return *this;
+        }
+
+        BigInt operator/(const int& num) const
+        {
+            return { value / num };
+        }
+    };
+
+        template<typename T>
+        struct AccumulationTraits;
+
+        template<>
+        struct AccumulationTraits<char>
+        {
+            using Acct = int;
+            inline static Acct const zero = { 0 };
+        };
+
+        template<>
+        struct AccumulationTraits<short>
+        {
+            using Acct = int;
+            inline static Acct const zero = { 0 };
+        };
+
+        template<>
+        struct AccumulationTraits<int>
+        {
+            using Acct = long;
+            inline static Acct const zero = { 0 };
+        };
+
+        template<>
+        struct AccumulationTraits<float>
+        {
+            using Acct = double;
+            inline static Acct const zero = { 0.f };
+        };
+
+        template<>
+        struct AccumulationTraits<BigInt>
+        {
+            using Acct = BigInt;
+            inline static Acct const zero = Acct{ 0 };
+        };
+
+        template<typename T>
+        auto accum(T  const* beg, T const* end)
+        {
+            using AccT = typename AccumulationTraits<T>::Acct;
+            AccT total = AccumulationTraits<T>::zero;
+            while (beg != end)
+            {
+                total += *beg;
+                ++beg;
+            }
+            return total;
+        }
+}
+
+namespace _19_1_3_17_
+{
+    struct BigInt
+    {
+        int value = 0;
+
+        BigInt(int v) : value(v) {}
+
+        BigInt operator+(const BigInt& otherr) const
+        {
+            return { value + otherr.value };
+        }
+
+        BigInt operator+=(const BigInt& otherr)
+        {
+            value += otherr.value;
+            return *this;
+        }
+
+        BigInt operator/(const int& num) const
+        {
+            return { value / num };
+        }
+    };
+
+    template<typename T>
+    struct AccumulationTraits;
+
+    template<>
+    struct AccumulationTraits<char>
+    {
+        using Acct = int;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<short>
+    {
+        using Acct = int;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<int>
+    {
+        using Acct = long;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<float>
+    {
+        using Acct = double;
+        inline static Acct const zero = { 0.f };
+    };
+
+    template<>
+    struct AccumulationTraits<BigInt>
+    {
+        using Acct = BigInt;
+        inline static Acct const zero = Acct{ 0 };
+    };
+
+    template<typename T,typename AT = AccumulationTraits<T>>
+    auto accum(T  const* beg, T const* end)
+    {
+        using AccT = typename AT::Acct;
+        AccT total = AT::zero;
+        while (beg != end)
+        {
+            total += *beg;
+            ++beg;
+        }
+        return total;
+    }
+}
+
+namespace _19_2_1_
+{
+    class SumPolicy
+    {
+    public:
+        template<typename T1,typename T2>
+        static void accumulate(T1& total, T2 const& value)
+        {
+            total += value;
+        }
+    };
+
+    struct BigInt
+    {
+        int value = 0;
+
+        BigInt(int v) : value(v) {}
+
+        BigInt operator+(const BigInt& otherr) const
+        {
+            return { value + otherr.value };
+        }
+
+        BigInt operator+=(const BigInt& otherr)
+        {
+            value += otherr.value;
+            return *this;
+        }
+
+        BigInt operator/(const int& num) const
+        {
+            return { value / num };
+        }
+    };
+
+    template<typename T>
+    struct AccumulationTraits;
+
+    template<>
+    struct AccumulationTraits<char>
+    {
+        using Acct = int;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<short>
+    {
+        using Acct = int;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<int>
+    {
+        using Acct = long;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<float>
+    {
+        using Acct = double;
+        inline static Acct const zero = { 0.f };
+    };
+
+    template<>
+    struct AccumulationTraits<BigInt>
+    {
+        using Acct = BigInt;
+        inline static Acct const zero = Acct{ 0 };
+    };
+
+    template<typename T, typename Policy = SumPolicy ,typename AT = AccumulationTraits<T>>
+    auto accum(T  const* beg, T const* end)
+    {
+        using AccT = typename AT::Acct;
+        AccT total = AT::zero;
+        while (beg != end)
+        {
+            Policy::accumulate(total, *beg);
+            ++beg;
+        }
+        return total;
+    }
+}
+
+namespace _19_2_2_
+{
+    template<typename T1,typename T2>
+    class SumPolicy
+    {
+    public:
+        static void accumulate(T1& total, T2 const& value)
+        {
+            total += value;
+        }
+    };
+
+    struct BigInt
+    {
+        int value = 0;
+
+        BigInt(int v) : value(v) {}
+
+        BigInt operator+(const BigInt& otherr) const
+        {
+            return { value + otherr.value };
+        }
+
+        BigInt operator+=(const BigInt& otherr)
+        {
+            value += otherr.value;
+            return *this;
+        }
+
+        BigInt operator/(const int& num) const
+        {
+            return { value / num };
+        }
+    };
+
+    template<typename T>
+    struct AccumulationTraits;
+
+    template<>
+    struct AccumulationTraits<char>
+    {
+        using Acct = int;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<short>
+    {
+        using Acct = int;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<int>
+    {
+        using Acct = long;
+        inline static Acct const zero = { 0 };
+    };
+
+    template<>
+    struct AccumulationTraits<float>
+    {
+        using Acct = double;
+        inline static Acct const zero = { 0.f };
+    };
+
+    template<>
+    struct AccumulationTraits<BigInt>
+    {
+        using Acct = BigInt;
+        inline static Acct const zero = Acct{ 0 };
+    };
+
+    template<typename T, template<typename,typename> typename Policy = SumPolicy, typename AT = AccumulationTraits<T>>
+    auto accum(T  const* beg, T const* end)
+    {
+        using AccT = typename AT::Acct;
+        AccT total = AT::zero;
+        while (beg != end)
+        {
+            Policy<AccT,T>::accumulate(total, *beg);
+            ++beg;
+        }
+        return total;
+    }
+}
+
+namespace _19_3_1_
+{
+    // 元素类型
+
+    template<typename T>
+    struct ElementT;
+
+    template<typename T>
+    struct ElementT<std::vector<T>>
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    struct ElementT<std::list<T>>
+    {
+        using Type = T;
+    };
+
+    template<typename T,std::size_t N>
+    struct ElementT<T[N]>
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    struct ElementT<T[]>
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    void printElementType(T const& c)
+    {
+        std::cout << "Container of " << typeid(typename ElementT<T>::Type).name() << " elements.\n";
+    }
+}
+
+namespace _19_3_2_1_
+{
+    //删除引用
+
+    template<typename T>
+    struct RemoveReferenceT
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    struct RemoveReferenceT<T&>
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    struct RemoveReferenceT<T&&>
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    using RemoveReference = typename RemoveReferenceT<T>::Type;
+}
+
+namespace _19_3_2_2_
+{
+    // 添加引用
+    template<typename T>
+    struct AddLValueReferenceT
+    {
+        using Type = T&;
+    };
+
+    template<>
+    struct AddLValueReferenceT<void>
+    {
+        using Type = void;
+    };
+
+    template<>
+    struct AddLValueReferenceT<void const>
+    {
+        using Type = void const;
+    };
+
+    template<>
+    struct AddLValueReferenceT<void volatile>
+    {
+        using Type = void volatile;
+    };
+
+    template<>
+    struct AddLValueReferenceT<void const volatile>
+    {
+        using Type = void const volatile;
+    };
+
+    template<typename T>
+    using AddLValueReference = typename AddLValueReferenceT<T>::Type;
+
+
+    template<typename T>
+    struct AddRValueReferenceT
+    {
+        using Type = T&&;
+    };
+
+    template<typename T>
+    using AddRValueReference = typename AddRValueReferenceT<T>::Type;
+
+    template<typename T>
+    using AddLValueReferenceT1 = T&;
+
+    template<typename T>
+    using AddRValueReferenceT1 = T&&;
+
+    
+}
+
+namespace _19_3_2_3_
+{
+    template<typename T>
+    struct RemoveConstT
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    struct RemoveConstT<T const>
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    using RemoveConst = typename RemoveConstT<T>::Type;
+
+    template<typename T>
+    struct RemoveVolatileT
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    struct RemoveVolatileT<T volatile>
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    using RemoveVolatile = typename RemoveVolatileT<T>::Type;
+
+    template<typename T>
+    struct RemoveCVT : RemoveConstT<typename RemoveVolatileT<T>::Type>
+    {
+
     };
 }
 
@@ -2250,34 +2890,34 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
         // 11.1.1
         {
             std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
-            _11_1_1_::foreach(primes.begin(), primes.end(), _11_1_1_::func);
-            _11_1_1_::foreach(primes.begin(), primes.end(), &_11_1_1_::func);
-            _11_1_1_::FuncObj funcObj;
-            _11_1_1_::foreach(primes.begin(), primes.end(), funcObj);
-            _11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
-                std::cout << "lambda func [" << i << "]" << std::endl;
-                });
+_11_1_1_::foreach(primes.begin(), primes.end(), _11_1_1_::func);
+_11_1_1_::foreach(primes.begin(), primes.end(), &_11_1_1_::func);
+_11_1_1_::FuncObj funcObj;
+_11_1_1_::foreach(primes.begin(), primes.end(), funcObj);
+_11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
+    std::cout << "lambda func [" << i << "]" << std::endl;
+    });
         }
         // 11.1.2
         {
-            std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
-            _11_1_2_::foreach(primes.begin(), primes.end(), [](std::string a, int i) {
-                std::cout << "输出：" << a << ":" << i << std::endl;
-                }, "hello");
-            _11_1_2_::MyClass obj;
-            _11_1_2_::foreach(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
+        std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
+        _11_1_2_::foreach(primes.begin(), primes.end(), [](std::string a, int i) {
+            std::cout << "输出：" << a << ":" << i << std::endl;
+            }, "hello");
+        _11_1_2_::MyClass obj;
+        _11_1_2_::foreach(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
 
 
 
-            _11_1_2_::foreach(primes.begin(), primes.end(), _11_1_2_::func);
-            _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
-            _11_1_2_::foreach(primes.begin(), primes.end(), funcObj,"_11_1_2_");
+        _11_1_2_::foreach(primes.begin(), primes.end(), _11_1_2_::func);
+        _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
+        _11_1_2_::foreach(primes.begin(), primes.end(), funcObj, "_11_1_2_");
 
-            //std::for_each_n(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
-            std::addressof(obj);
+        //std::for_each_n(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
+        std::addressof(obj);
 
-            std::forward<_11_1_2_::MyClass>(obj);
-            std::move(obj);
+        std::forward<_11_1_2_::MyClass>(obj);
+        std::move(obj);
         }
         //11.1.3
         {
@@ -2286,7 +2926,7 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
                 return "hello world";
             };
 
-            auto func1 = [](std::string arg1,int i) 
+            auto func1 = [](std::string arg1, int i)
             {
                 std::cout << "hello world 2" << arg1 << i << std::endl;
             };
@@ -2296,8 +2936,8 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
 
             std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
             _11_1_3_::foreach(primes.begin(), primes.end(), [](int i) {
-                std::cout <<"---------" << i << std::endl;
-            });
+                std::cout << "---------" << i << std::endl;
+                });
 
             _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
             _11_1_3_::foreach(primes.begin(), primes.end(), funcObj, "_11_1_3_");
@@ -2314,10 +2954,10 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
             //func(1, 5, a);
             uint32_t index;
             _BitScanReverse((unsigned long*)&index, a);
-            std::cout <<"从高位向低位搜索" << index << std::endl;
+            std::cout << "从高位向低位搜索" << index << std::endl;
             uint32_t index1;
             _BitScanForward((unsigned long*)&index1, a);
-            std::cout <<"从低位向高位搜索" << index1 << std::endl;
+            std::cout << "从低位向高位搜索" << index1 << std::endl;
         }
 
         // 11.4
@@ -2348,5 +2988,106 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
 
         }
     }
+
+    //------------------------------------------19----------------------------------------------------------------
+    
+{}
+    {
+        // 19_1_1_
+        {
+            int num[] = { 1,2,3,4,5 };
+            std::cout << "the average value of the integer values is " << _19_1_1_::accum(num, num + 5) / 5 << std::endl;
+            char name[] = "template";
+            int lenght = sizeof(name) - 1;
+            std::cout << "the average value of the char in " << name << " is " << _19_1_1_::accum(name, name + lenght) / lenght << std::endl;
+        }
+
+        // 19_1_2_ 值萃取
+        { 
+            std::cout << "-----------------19_1_2_" << std::endl;
+            int num[] = { 1,2,3,4,5 };
+            std::cout << "the average value of the integer values is " << _19_1_2_::accum(num, num + 5) / 5 << std::endl;
+            char name[] = "template";
+            int lenght = sizeof(name) - 1;
+            std::cout << "the average value of the char in " << name << " is " << _19_1_2_::accum(name, name + lenght) / lenght << std::endl;
+
+        }
+
+        // 19_1_2_1411 值萃取
+        {
+            std::cout << "-----------------19_1_2_1411" << std::endl;
+            int num[] = { 1,2,3,4,5 };
+            std::cout << "the average value of the integer values is " << _19_1_2_1411_::accum(num, num + 5) / 5 << std::endl;
+            char name[] = "template";
+            int lenght = sizeof(name) - 1;
+            std::cout << "the average value of the char in " << name << " is " << _19_1_2_1411_::accum(name, name + lenght) / lenght << std::endl;
+            _19_1_2_1411_::BigInt bigNum[] = { {1},{2},{3},{4},{5} };
+            std::cout << "the average value of the BigInt in " << name << " is " << (_19_1_2_1411_::accum(bigNum, bigNum + 5) / 5).value << std::endl;
+        }
+
+        // _19_1_2_17_ 值萃取
+        {
+            std::cout << "-----------------_19_1_2_17_" << std::endl;
+            int num[] = { 1,2,3,4,5 };
+            std::cout << "the average value of the integer values is " << _19_1_2_17_::accum(num, num + 5) / 5 << std::endl;
+            char name[] = "template";
+            int lenght = sizeof(name) - 1;
+            std::cout << "the average value of the char in " << name << " is " << _19_1_2_17_::accum(name, name + lenght) / lenght << std::endl;
+            _19_1_2_17_::BigInt bigNum[] = { {1},{2},{3},{4},{5} };
+            std::cout << "the average value of the BigInt in " << name << " is " << (_19_1_2_17_::accum(bigNum, bigNum + 5) / 5).value << std::endl;
+        }
+
+        // _19_1_3_17_ 值萃取
+        {
+            std::cout << "-----------------_19_1_3_17_" << std::endl;
+            int num[] = { 1,2,3,4,5 };
+            std::cout << "the average value of the integer values is " << _19_1_3_17_::accum(num, num + 5) / 5 << std::endl;
+            char name[] = "template";
+            int lenght = sizeof(name) - 1;
+            std::cout << "the average value of the char in " << name << " is " << _19_1_3_17_::accum(name, name + lenght) / lenght << std::endl;
+            _19_1_3_17_::BigInt bigNum[] = { {1},{2},{3},{4},{5} };
+            std::cout << "the average value of the BigInt in " << name << " is " << (_19_1_3_17_::accum(bigNum, bigNum + 5) / 5).value << std::endl;
+        }
+
+        // _19_2_1_ 值萃取
+        {
+            std::cout << "-----------------_19_2_1_" << std::endl;
+            int num[] = { 1,2,3,4,5 };
+            std::cout << "the average value of the integer values is " << _19_2_1_::accum(num, num + 5) / 5 << std::endl;
+            char name[] = "template";
+            int lenght = sizeof(name) - 1;
+            std::cout << "the average value of the char in " << name << " is " << _19_2_1_::accum(name, name + lenght) / lenght << std::endl;
+            _19_2_1_::BigInt bigNum[] = { {1},{2},{3},{4},{5} };
+            std::cout << "the average value of the BigInt in " << name << " is " << (_19_2_1_::accum(bigNum, bigNum + 5) / 5).value << std::endl;
+        }
+
+        // _19_2_2_ 值萃取
+        {
+            std::cout << "-----------------_19_2_2_" << std::endl;
+            int num[] = { 1,2,3,4,5 };
+            std::cout << "the average value of the integer values is " << _19_2_2_::accum(num, num + 5) / 5 << std::endl;
+            char name[] = "template";
+            int lenght = sizeof(name) - 1;
+            std::cout << "the average value of the char in " << name << " is " << _19_2_2_::accum(name, name + lenght) / lenght << std::endl;
+            _19_2_2_::BigInt bigNum[] = { {1},{2},{3},{4},{5} };
+            std::cout << "the average value of the BigInt in " << name << " is " << (_19_2_2_::accum(bigNum, bigNum + 5) / 5).value << std::endl;
+        }
+
+        //_19_3_1_ 元素类型
+        {
+            std::cout << "-----------------_19_3_1_" << std::endl;
+            std::vector<bool> s;
+            _19_3_1_::printElementType(s);
+            int arr[42];
+            _19_3_1_::printElementType(arr);
+        }
+
+        // _19_3_2_1 删除引用
+        {
+            int a = 0;
+            int& i = a;
+            _19_3_2_1_::RemoveReference<int&> b = 0;
+        }
+       }
     return 0;
 }
