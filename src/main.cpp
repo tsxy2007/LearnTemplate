@@ -1762,6 +1762,189 @@ namespace _11_5_
     };
 }
 
+namespace _18_1_
+{
+    struct Coord
+    {
+        int Type = 0;
+    };
+
+    class GeoObj
+    {
+    public:
+        virtual void draw() const = 0;
+        virtual Coord center_of_gravity() const = 0;
+        virtual ~GeoObj() = default;
+    };
+
+    class Circle : public GeoObj
+    {
+    public:
+
+        virtual void draw() const override
+        {
+            std::cout << "draw() Circle" << std::endl;
+        }
+        virtual Coord center_of_gravity() const override
+        {
+            return {1};
+        }
+    };
+
+    class Line : public GeoObj
+    {
+    public:
+
+        virtual void draw() const override
+        {
+            std::cout << "draw() Line" << std::endl;
+        }
+        virtual Coord center_of_gravity() const override
+        {
+            return { 2 };
+        }
+    };
+
+    void myDraw(GeoObj const& obj)
+    {
+        obj.draw();
+    }
+
+    Coord distance(GeoObj const& x1, GeoObj const& x2)
+    {
+        Coord c1 = x1.center_of_gravity();
+        Coord c2 = x2.center_of_gravity();
+        return { c2.Type - c1.Type };
+    }
+
+    void drawElems(std::vector<GeoObj*> const& elems)
+    {
+        for (size_t i = 0; i < elems.size(); i++)
+        {
+            elems[i]->draw();
+        }
+    }
+}
+
+namespace _18_2_
+{
+    struct Coord
+    {
+        int Type = 0;
+    };
+
+    class Circle 
+    {
+    public:
+
+        virtual void draw() const 
+        {
+            std::cout << "draw() Circle" << std::endl;
+        }
+        virtual Coord center_of_gravity() const 
+        {
+            return { 1 };
+        }
+    };
+
+    class Line 
+    {
+    public:
+
+        virtual void draw() const 
+        {
+            std::cout << "draw() Line" << std::endl;
+        }
+        virtual Coord center_of_gravity() const 
+        {
+            return { 2 };
+        }
+    };
+
+    template <typename T>
+    void myDraw(T const& obj)
+    {
+        obj.draw();
+    }
+
+    template<typename T>
+    void drawElems(std::vector<T> const& elems)
+    {
+        for (size_t i = 0; i < elems.size(); i++)
+        {
+            elems[i].draw();
+        }
+    }
+}
+
+namespace _18_4_
+{
+    struct Coord
+    {
+        int Type = 0;
+    };
+
+    template<typename T>
+    concept GeoObj = requires(T x)
+    {
+        { x.draw() }-> std::convertible_to<void>;
+        { x.center_of_gravity() } ->std::convertible_to<Coord>;
+    };
+
+    template<typename T>
+    requires GeoObj<T>
+        void myDraw(T const& obj)
+    {
+        obj.draw();
+    }
+
+
+    class Circle
+    {
+    public:
+
+        virtual void draw() const
+        {
+            std::cout << "draw() Circle" << std::endl;
+        }
+        virtual Coord center_of_gravity() const
+        {
+            return { 1 };
+        }
+    };
+
+    class Line
+    {
+    public:
+
+        virtual void draw() const
+        {
+            std::cout << "draw() Line" << std::endl;
+        }
+        virtual Coord center_of_gravity() const
+        {
+            return { 2 };
+        }
+    };
+
+    class Test
+    {
+    public:
+
+        virtual void draw() const
+        {
+            std::cout << "draw() Test" << std::endl;
+        }
+
+        virtual Coord center_of_gravity() const
+        {
+            return { 3 };
+        }
+    private:
+
+    };
+
+}
 int size = 10;
 int main(  )
 {
@@ -2247,35 +2430,35 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
     {
         // 11.1.1
         {
-            std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
-            _11_1_1_::foreach(primes.begin(), primes.end(), _11_1_1_::func);
-            _11_1_1_::foreach(primes.begin(), primes.end(), &_11_1_1_::func);
-            _11_1_1_::FuncObj funcObj;
-            _11_1_1_::foreach(primes.begin(), primes.end(), funcObj);
-            _11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
-                std::cout << "lambda func [" << i << "]" << std::endl;
-                });
+std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
+_11_1_1_::foreach(primes.begin(), primes.end(), _11_1_1_::func);
+_11_1_1_::foreach(primes.begin(), primes.end(), &_11_1_1_::func);
+_11_1_1_::FuncObj funcObj;
+_11_1_1_::foreach(primes.begin(), primes.end(), funcObj);
+_11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
+    std::cout << "lambda func [" << i << "]" << std::endl;
+    });
         }
         // 11.1.2
         {
-            std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
-            _11_1_2_::foreach(primes.begin(), primes.end(), [](std::string a, int i) {
-                std::cout << "输出：" << a << ":" << i << std::endl;
-                }, "hello");
-            _11_1_2_::MyClass obj;
-            _11_1_2_::foreach(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
+        std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
+        _11_1_2_::foreach(primes.begin(), primes.end(), [](std::string a, int i) {
+            std::cout << "输出：" << a << ":" << i << std::endl;
+            }, "hello");
+        _11_1_2_::MyClass obj;
+        _11_1_2_::foreach(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
 
 
 
-            _11_1_2_::foreach(primes.begin(), primes.end(), _11_1_2_::func);
-            _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
-            _11_1_2_::foreach(primes.begin(), primes.end(), funcObj,"_11_1_2_");
+        _11_1_2_::foreach(primes.begin(), primes.end(), _11_1_2_::func);
+        _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
+        _11_1_2_::foreach(primes.begin(), primes.end(), funcObj, "_11_1_2_");
 
-            //std::for_each_n(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
-            std::addressof(obj);
+        //std::for_each_n(primes.begin(), primes.end(), &_11_1_2_::MyClass::memfunc, obj, "world");
+        std::addressof(obj);
 
-            std::forward<_11_1_2_::MyClass>(obj);
-            std::move(obj);
+        std::forward<_11_1_2_::MyClass>(obj);
+        std::move(obj);
         }
         //11.1.3
         {
@@ -2284,7 +2467,7 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
                 return "hello world";
             };
 
-            auto func1 = [](std::string arg1,int i) 
+            auto func1 = [](std::string arg1, int i)
             {
                 std::cout << "hello world 2" << arg1 << i << std::endl;
             };
@@ -2294,8 +2477,8 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
 
             std::vector<int> primes = { 1,2,3,4,5,6,7,8 };
             _11_1_3_::foreach(primes.begin(), primes.end(), [](int i) {
-                std::cout <<"---------" << i << std::endl;
-            });
+                std::cout << "---------" << i << std::endl;
+                });
 
             _11_1_2_::FuncObj funcObj = _11_1_2_::FuncObj();
             _11_1_3_::foreach(primes.begin(), primes.end(), funcObj, "_11_1_3_");
@@ -2312,10 +2495,10 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
             //func(1, 5, a);
             uint32_t index;
             _BitScanReverse((unsigned long*)&index, a);
-            std::cout <<"从高位向低位搜索" << index << std::endl;
+            std::cout << "从高位向低位搜索" << index << std::endl;
             uint32_t index1;
             _BitScanForward((unsigned long*)&index1, a);
-            std::cout <<"从低位向高位搜索" << index1 << std::endl;
+            std::cout << "从低位向高位搜索" << index1 << std::endl;
         }
 
         // 11.4
@@ -2337,13 +2520,54 @@ std::unordered_set<_4_4_5_::Customer, CusomerOP, CusomerOP> _4_4_5_Coll2;
             //RefMem<int&, 0>rm4; // 不能从int 转换成int&
 
             //Arr<int&, size> x;// error 编译错误在vector;
-            Arr<int, size> y;
-            y.print();
-            size += 100; //modifies SZ in Arr<>
-            y.print();// run-time ERROR: invalid memory access: loops over 120 elements
+            //Arr<int, size> y;
+            //y.print();
+            //size += 100; //modifies SZ in Arr<>
+            //y.print();// run-time ERROR: invalid memory access: loops over 120 elements
 
             std::pair<int, int>a;
 
+        }
+    }
+    //------------------------------------------------18-----------------------------------------------------------
+    {
+        // 18.1
+        {
+            using namespace _18_1_;
+            Line l;
+            Circle c, c1, c2;
+            myDraw(l);
+            myDraw(c1);
+            std::vector<GeoObj*> coll;
+            coll.push_back(&l);
+            coll.push_back(&c2);
+            coll.push_back(&c1);
+            drawElems(coll);
+        }
+        std::cout << "18-2......................................." << std::endl;
+        //18.2
+        {
+            using namespace _18_2_;
+
+            Line l;
+            Circle c;
+            myDraw(l);
+            myDraw(c);
+            std::vector<Line> lV;
+            lV.push_back(l);
+            drawElems(lV); 
+        } 
+        //18.4
+        {
+            std::cout << "18-4......................................." << std::endl;
+            using namespace _18_4_;
+
+            Line l;
+            Circle c;
+            Test t;
+            myDraw(l);
+            myDraw(c);
+            myDraw(t);
         }
     }
     return 0;
