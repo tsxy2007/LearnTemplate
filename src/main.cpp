@@ -3631,6 +3631,12 @@ _11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
             std::cout << _19_4_1_::IsDefaultConstructibleT<int>::value << std::endl;
             std::cout << _19_4_1_::IsDefaultConstructibleT<int&>::value << std::endl;
         }
+        // _19_4_2_用 SFINAE 排除某些重载函数
+        {
+            FPrint print("_19_4_2_用 SFINAE 排除某些重载函数");
+            std::cout << _19_4_2_::IsDefaultConstructibleT<int>::value << std::endl;
+            std::cout << _19_4_2_::IsDefaultConstructibleT<int&>::value << std::endl;
+        }
         ////_19_4_3_ 将泛型 Lambdas 用于 SFINAE
         {
             FPrint print{ "_19_4_3_" };
