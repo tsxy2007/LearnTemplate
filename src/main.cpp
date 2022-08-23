@@ -2853,6 +2853,102 @@ namespace _19_4_3_
     constexpr auto HasFirst = isValid([](auto x)->decltype((void)valueT(x).First) {});
 }
 
+namespace _19_5_1_
+{
+    template<typename FROM, typename TO>
+    struct IsConvertibleHelper
+    {
+    private:
+        static void aux(TO);
+
+        template<typename F,typename = decltype(aux(std::declval<F>()))>
+        static std::true_type test(void*);
+
+        template<typename>
+        static std::false_type test(...);
+
+    public:
+        using Type = decltype(test<FROM>(nullptr));
+    };
+
+    template<typename FROM,typename TO>
+    struct IsConveribleT : IsConvertibleHelper<FROM,TO>::Type{};
+
+    template <typename FROM,typename TO>
+    using IsConvertible = typename IsConveribleT<FROM, TO>::Type;
+
+    template<typename FROM,typename TO>
+    constexpr bool isConvertible = IsConveribleT<FROM, TO>::value;
+}
+
+namespace _19_5_2_
+{
+    template<typename FROM,typename TO,bool = std::is_void_v<TO> || std::is_array_v<TO>||std::is_function_v<TO>>
+    struct IsConvertibleHelper
+    {
+        using Type = std::integral_constant<bool, std::is_void_v<TO>&& std::is_void_v<FROM>>;
+    };
+
+    template<typename FROM,typename TO>
+    struct IsConvertibleHelper<FROM,TO,false>
+    {
+    private:
+        static void aux(TO);
+
+        template<typename F,typename = decltype(aux(std::declval<F>()))>
+        static std::true_type test(void*);
+
+        template<typename>
+        static std::false_type test(...);
+    public:
+        using Type = decltype(test<FROM>(nullptr));
+    };
+
+    template<typename FROM, typename TO>
+    struct IsConveribleT : IsConvertibleHelper<FROM, TO>::Type {};
+
+    template <typename FROM, typename TO>
+    using IsConvertible = typename IsConveribleT<FROM, TO>::Type;
+
+    template<typename FROM, typename TO>
+    constexpr bool isConvertible = IsConveribleT<FROM, TO>::value;
+}
+
+namespace _19_6_1_
+{
+    template<typename,typename = std::void_t<>>
+    struct HasSizeTypeT : std::false_type{};
+
+    template<typename T>
+    struct HasSizeTypeT<T, std::void_t<typename std::remove_reference_t<T>::size_type > > : std::true_type{};
+}
+
+namespace _19_6_2_
+{
+#define DEFINE_HAS_TYPE(MemType) \
+    template<typename,typename = std::void_t<>> \
+    struct HasTypeT_##MemType : std::false_type{}; \
+    template<typename T> \
+    struct HasTypeT_##MemType<T, std::void_t<typename std::remove_reference_t<T>::MemType > > : std::true_type {};
+
+    DEFINE_HAS_TYPE(value_type);
+    DEFINE_HAS_TYPE(char_type);
+}
+
+namespace _19_6_3_
+{
+#define DEFINE_HAS_MEMBER(Member) \
+        template<typename,typename = std::void_t<>>\
+        struct HasMemberT_##Member : std::false_type {}; \
+        template<typename T> \
+        struct HasMemberT_##Member<T,std::void_t<decltype(&T::Member)>> : std::true_type{};
+
+
+    DEFINE_HAS_MEMBER(size);
+    DEFINE_HAS_MEMBER(first);
+
+}
+
 int size = 10;
 int main(  )
 {
@@ -3645,6 +3741,75 @@ _11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
             std::cout << _19_4_3_::isDefaultConstructible(_19_4_3_::type<_19_4_3_::Test>) << std::endl;
             std::cout <<"Has first Test: " << _19_4_3_::HasFirst(_19_4_3_::type<_19_4_3_::Test>) << std::endl;
             std::cout << "Has first int: " << _19_4_3_::HasFirst(_19_4_3_::type<int>) << std::endl;
+        }
+
+        // _19_5_1 IsConvertibleT 转换
+        {
+            FPrint print("_19_5_1 IsConvertibleT 转换");
+            struct MyStruct{};
+
+            std::cout << "MyStruct " <<( _19_5_1_::isConvertible<MyStruct, int>  ? "Can" : "Can't" )<< " convertible to int" << std::endl;
+            std::cout << "int " << (_19_5_1_::isConvertible<int, int> ? "Can" : "Can't") << " convertible to int " << std::endl;
+            std::cout << "double " << (_19_5_1_::isConvertible < double, int> ? "Can" : "Can't") << " convertible to int " << std::endl;
+            std::cout << "std::string " << (_19_5_1_::isConvertible < std::string, int> ? "Can" : "Can't") << " convertible to int " << std::endl;
+            std::cout << "int* " << (_19_5_1_::isConvertible < int*, int[]> ? "Can" : "Can't") << " convertible to int[] " << std::endl; // error 错误情况实际不能转换
+            std::is_convertible<int,int>;
+        }
+
+        // _19_5_2_ IsConvertibleT 转换
+        {
+            FPrint print("_19_5_2_ IsConvertibleT 转换");
+            struct MyStruct {};
+
+            std::cout << "MyStruct " << (_19_5_2_::isConvertible<MyStruct, int> ? "Can" : "Can't") << " convertible to int" << std::endl;
+            std::cout << "int " << (_19_5_2_::isConvertible<int, int> ? "Can" : "Can't") << " convertible to int " << std::endl;
+            std::cout << "double " << (_19_5_2_::isConvertible < double, int> ? "Can" : "Can't") << " convertible to int " << std::endl;
+            std::cout << "std::string " << (_19_5_2_::isConvertible < std::string, int> ? "Can" : "Can't") << " convertible to int " << std::endl;
+            std::cout << "int* " << (_19_5_2_::isConvertible < int*, int[]> ? "Can" : "Can't") << " convertible to int[] " << std::endl; // error 错误情况实际不能转换
+            std::is_convertible<int, int>;
+        }
+        // _19_6_1_ 探测类型成员
+        {
+            FPrint print("_19_6_1_ 探测类型成员");
+            struct MyStruct
+            {
+                using size_type = std::size_t;
+            };
+
+            struct size_type
+            {
+
+            };
+
+            struct Sizeable : size_type
+            {
+
+            };
+
+            static_assert(_19_6_1_::HasSizeTypeT<Sizeable>::value, "Compiler bug: Injected class name missing");
+
+            std::cout << _19_6_1_::HasSizeTypeT<int>::value << std::endl;
+            std::cout << _19_6_1_::HasSizeTypeT<MyStruct>::value << std::endl;
+            std::cout << _19_6_1_::HasSizeTypeT<MyStruct&>::value << std::endl;
+        }
+        //_19_6_2_ 探测任意类型成员
+        {
+            FPrint print("_19_6_2_ 探测任意类型成员");
+
+            std::cout << "int::value_type: " << _19_6_2_::HasTypeT_value_type<int>::value << std::endl;
+            std::cout << "int::char_type: " << _19_6_2_::HasTypeT_char_type<int>::value << std::endl;
+            std::cout << "std::iostream::value_type: " << _19_6_2_::HasTypeT_value_type<std::iostream>::value << std::endl;
+            std::cout << "std::iostream::char_type: " << _19_6_2_::HasTypeT_char_type<std::iostream>::value << std::endl;
+            std::cout << "std::vector::value_type: " << _19_6_2_::HasTypeT_value_type<std::vector<int>>::value << std::endl;
+            std::cout << "std::vector::char_type: " << _19_6_2_::HasTypeT_char_type<std::vector<int>>::value << std::endl;
+        }
+        //_19_6_3_ 探测非类型成员
+        {
+            FPrint print("_19_6_2_ 探测任意类型成员");
+
+            std::cout << "int::size: " << _19_6_3_::HasMemberT_size<int>::value << std::endl;
+            std::cout << "std::pair<int,int>::first: " << _19_6_3_::HasMemberT_first<std::pair<int,int>>::value << std::endl;
+            std::cout << "std::vector<int>::size: " << _19_6_3_::HasMemberT_size<std::vector<int>>::value << std::endl;
         }
        }
     return 0;
