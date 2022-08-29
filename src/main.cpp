@@ -2946,6 +2946,22 @@ namespace _19_6_3_
 
     DEFINE_HAS_MEMBER(size);
     DEFINE_HAS_MEMBER(first);
+    //DEFINE_HAS_MEMBER(begin);// error 重载函数不可以
+
+#define DEFINE_HAS_FUNCTION(FUNC) \
+    template<typename, typename = std::void_t<>>\
+    struct HasMemberT_##FUNC : std::false_type {};\
+    template<typename T>\
+    struct HasMemberT_##FUNC<T, std::void_t<decltype(std::declval<T>().FUNC())>> : std::true_type {};
+
+    DEFINE_HAS_FUNCTION(begin);
+
+
+    template<typename,typename,typename=std::void_t<>>
+    struct HasLessT : std::false_type {};
+
+    template<typename T1,typename T2>
+    struct  HasLessT < T1, T2, std::void_t< decltype(std::declval<T1>() < std::declval<T2>())> > : std::true_type{};
 
 }
 
@@ -3964,10 +3980,14 @@ _11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
         //_19_6_3_ 探测非类型成员
         {
             FPrint print("_19_6_2_ 探测任意类型成员");
-
+            std::vector<int> a{ 1,2,4 };
             std::cout << "int::size: " << _19_6_3_::HasMemberT_size<int>::value << std::endl;
             std::cout << "std::pair<int,int>::first: " << _19_6_3_::HasMemberT_first<std::pair<int,int>>::value << std::endl;
             std::cout << "std::vector<int>::size: " << _19_6_3_::HasMemberT_size<std::vector<int>>::value << std::endl;
+            std::cout << "std::vector<int>::begin()" << _19_6_3_::HasMemberT_begin<std::vector<int>>::value << std::endl;
+
+            std::cout << "string operator<()" << _19_6_3_::HasLessT<std::string, std::string>::value << std::endl;
+            std::cout << "string operator<()" << _19_6_3_::HasLessT<std::string, int>::value << std::endl;
         }
 
         // 19_7_1_ if_then_else
