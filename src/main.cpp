@@ -2949,6 +2949,164 @@ namespace _19_6_3_
 
 }
 
+namespace _19_7_1_
+{
+    template<bool COND, typename TrueType, typename FalseType>
+    struct  ifThenElseT
+    {
+        using Type = TrueType;
+    };
+
+    template<typename TrueType, typename FalseType>
+    struct  ifThenElseT<false, TrueType, FalseType>
+    {
+        using Type = FalseType;
+    };
+
+    template<bool COND, typename TrueType, typename FalseType>
+    using IfThenElse = typename ifThenElseT<COND, TrueType, FalseType>::Type;
+
+    template<typename T>
+    struct MakeUnsignedT
+    {
+        using Type = typename std::make_unsigned<T>::type;
+    };
+    template<typename T>
+    struct IdentityT
+    {
+        using Type = T;
+    };
+
+    template<typename T>
+    struct UnsignedT
+    {
+        using Type = IfThenElse<(std::is_integral_v<T> && !std::is_same_v<T, bool>), MakeUnsignedT<T>, IdentityT<T> >::Type;
+    };
+}
+
+namespace _19_7_2_
+{
+    template<typename T,typename = std::void_t<>>
+    struct IsNothrowMoveConstructibleT : std::false_type
+    { };
+    template<typename T>
+    struct IsNothrowMoveConstructibleT<T, std::void_t<decltype(T(std::declval<T>()))>>
+        : std::bool_constant<noexcept(T(std::declval<T>()))>
+    {
+
+    };
+
+    template<typename T1,typename T2>
+    class Pair
+    {
+    public:
+        Pair(Pair&& other)
+            noexcept(IsNothrowMoveConstructibleT<T1>::value&& IsNothrowMoveConstructibleT<T2>::value)
+            : first(std::forward<T1>(other.first)),
+            second(std::forward<T2>(other.second)){ }
+
+        Pair(const T1& _Val1,const T2& _Val2) : first(_Val1), second(_Val2) {}
+    private:
+        T1 first;
+        T2 second;
+    };
+
+    class E
+    {
+    public:
+        E(E&&) = delete;
+        E() {};
+        E(const E&) {};
+    };
+}
+
+namespace _19_8_1_
+{
+    template<typename T>
+    struct IsFundaT : std::false_type{ };
+
+    #define MK_FUNDA_TYPE(T) \
+    template<> struct IsFundaT<T> : std::true_type{ };
+
+    MK_FUNDA_TYPE(void);
+    MK_FUNDA_TYPE(bool);
+    MK_FUNDA_TYPE(char);
+    MK_FUNDA_TYPE(signed char);
+    MK_FUNDA_TYPE(unsigned char);
+    MK_FUNDA_TYPE(wchar_t);
+    MK_FUNDA_TYPE(char16_t);
+    MK_FUNDA_TYPE(char32_t);
+    MK_FUNDA_TYPE(signed short);
+    MK_FUNDA_TYPE(unsigned short);
+    MK_FUNDA_TYPE(signed int);
+    MK_FUNDA_TYPE(unsigned int);
+    MK_FUNDA_TYPE(signed long);
+    MK_FUNDA_TYPE(unsigned long);
+    MK_FUNDA_TYPE(signed long long);
+    MK_FUNDA_TYPE(unsigned long long);
+    MK_FUNDA_TYPE(float);
+    MK_FUNDA_TYPE(double);
+    MK_FUNDA_TYPE(long double);
+    MK_FUNDA_TYPE(std::nullptr_t);
+    #undef MK_FUNDA_TYPE
+
+
+    template<typename T>
+    void Test(T const& it)
+    {
+        if (IsFundaT<T>::value)
+        {
+            std::cout << "T is a fundamental type" << std::endl;
+        }
+        else
+        {
+            std::cout << "T is not a fundamental type" << std::endl;
+        }
+    }
+}
+
+namespace _19_8_2_
+{
+
+    template<typename T>
+    struct IsPointerT : std::false_type
+    {
+
+    };
+    
+    template<typename T>
+    struct IsPointerT<T*> : std::true_type
+    {
+        using BaseT = T;
+    };
+
+    template<typename T>
+    struct IsLValueReferenceT : std::false_type
+    {
+
+    };
+    template<typename T>
+    struct IsLValueReferenceT<T&> : std::true_type
+    {
+        using BaseT = T;
+    };
+
+    template<typename T>
+    struct IsRValueReferenceT : std::false_type
+    {
+
+    };
+
+    template<typename T>
+    struct IsRValueReferenceT<T&&> : std::true_type
+    {
+        using BaseT = T;
+    };
+
+    //template<typename T>
+
+}
+
 int size = 10;
 int main(  )
 {
@@ -3810,6 +3968,29 @@ _11_1_1_::foreach(primes.begin(), primes.end(), [](int i) {
             std::cout << "int::size: " << _19_6_3_::HasMemberT_size<int>::value << std::endl;
             std::cout << "std::pair<int,int>::first: " << _19_6_3_::HasMemberT_first<std::pair<int,int>>::value << std::endl;
             std::cout << "std::vector<int>::size: " << _19_6_3_::HasMemberT_size<std::vector<int>>::value << std::endl;
+        }
+
+        // 19_7_1_ if_then_else
+        {
+            FPrint print("19_7_1_ if_then_else");
+            _19_7_1_::UnsignedT<int>::Type a = 1;
+        }
+
+        // 19_7_2_ 探测不抛出异常
+        {
+            FPrint print("19_7_2_ 探测不抛出异常");
+            using namespace _19_7_2_;
+            Pair a{ 1,2 };
+            Pair b{ 1,E() };
+            //decltype(b) d = std::move(b); // 失败
+            std::pair c{ 1,2 };
+        }
+
+        // _19_8_1_ 判断基础类型
+        {
+            FPrint print{"_19_8_1_ 判断基础类型"};
+            _19_8_1_::Test(7);
+            _19_8_1_::Test("hello");
         }
        }
     return 0;
