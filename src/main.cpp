@@ -3238,6 +3238,24 @@ namespace _19_8_3_
 	}
 }
 
+namespace _19_8_4_
+{
+	template<typename T,typename = std::void_t<>>
+	struct IsClassT : std::false_type
+	{
+
+	};
+
+	template<typename T>
+	struct IsClassT < T,std::void_t<int T::*>> : std::true_type
+	{
+
+	};
+
+	template<typename T>
+	constexpr bool IsClass_v = IsClassT<T>::value;
+}
+
 int size = 10;
 int main()
 {
@@ -3899,6 +3917,7 @@ int main()
 			std::cout << "the average value of the char in " << name << " is " << _19_1_2_1411_::accum(name, name + lenght) / lenght << std::endl;
 			_19_1_2_1411_::BigInt bigNum[] = { {1},{2},{3},{4},{5} };
 			std::cout << "the average value of the BigInt in " << name << " is " << (_19_1_2_1411_::accum(bigNum, bigNum + 5) / 5).value << std::endl;
+		
 		}
 
 		// _19_1_2_17_ 值萃取
@@ -4161,7 +4180,47 @@ int main()
 			std::cout << "int Test(int i) is function ? " << std::is_reference_v<int(int,int)><< std::endl;
 			std::cout << "int Test(int i) is function ? " << IsFunctionT<decltype(Test)>::value<< std::endl;
 
+	
 		}
+
+		// _19_8_4_ 判断class类型
+		{
+			FPrint print("_19_8_4_ 判断class类型");
+			struct Test{};
+			enum ETest
+			{
+
+			};
+
+			enum class MyEnumClass
+			{
+
+			};
+			std::cout << "int is class ? " << std::is_class_v<int> << std::endl;
+			std::cout << "int is class ? " << _19_8_4_::IsClass_v<int> << std::endl;
+			std::cout << "Test is class ? " << std::is_class_v<Test> << std::endl;
+			std::cout << "Test is class ? " << _19_8_4_::IsClass_v<Test> << std::endl;
+			std::cout << "ETest is class ? " << std::is_class_v<ETest> << std::endl;
+			std::cout << "ETest is class ? " << _19_8_4_::IsClass_v<ETest> << std::endl;
+			std::cout << "uint16_t is class ? " << std::is_class_v<uint16_t> << std::endl;
+			std::cout << "uint16_t is class ? " << _19_8_4_::IsClass_v<uint16_t> << std::endl;
+			std::cout << "MyEnumClass is class ? " << std::is_class_v<MyEnumClass> << std::endl;
+			std::cout << "MyEnumClass is class ? " << _19_8_4_::IsClass_v<MyEnumClass> << std::endl;
+		}
+
+		// _19_8_5_ 识别枚举类型
+		{
+			FPrint print("_19_8_5_ 识别枚举类型"); 
+			struct Test {};
+			enum ETest{};
+			enum class MyEnumClass{};
+
+			std::cout << "is Test enum ? " << std::is_enum_v<Test> << std::endl;
+			std::cout << "is ETest enum ? " << std::is_enum_v<ETest> << std::endl;
+			std::cout << "is MyEnumClass enum ? " << std::is_enum_v<MyEnumClass> << std::endl;
+			std::cout << "is int enum ? " << std::is_enum_v<int> << std::endl;
+		}
+
 	}
 	return 0;
 }
