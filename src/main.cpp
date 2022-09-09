@@ -9,6 +9,9 @@
 #include <unordered_set>
 #include <bitset>
 #include <thread>
+#include <unordered_map>
+#include <map>
+#include <set>
 
 class FPrint
 {
@@ -2797,6 +2800,22 @@ namespace _19_4_1_
 	public:
 		static constexpr bool value = _19_3_3_2_::IsSameV<decltype(test<T>(nullptr)), char>;
 	};
+	
+
+	template<typename T>
+	struct IsDefaultConstructibleT1
+	{
+	private:
+		using Size1T = char(&)[1]; 
+		using Size2T = char(&)[2];
+		template<typename U, typename = decltype(U())>
+		static Size1T test(void*);
+
+		template<typename>
+		static Size2T test(...);
+	public:
+		static constexpr bool value = (sizeof(test<T>(nullptr)) == sizeof(Size1T));
+	};
 }
 
 namespace _19_4_2_
@@ -2848,9 +2867,62 @@ namespace _19_4_3_
 
 	template<typename T>
 	T valueT(TypeT<T>);
+	/*
+	[](auto&&... args)
+		{
+			return decltype(isValidImpl<decltype([](auto x) -> decltype((void)decltype(valueT(x))()) {}),decltype(args)&&...>(nullptr)){};
+		};
 
+	*/
 	constexpr auto isDefaultConstructible = isValid([](auto x) -> decltype((void)decltype(valueT(x))()) {});
+
 	constexpr auto HasFirst = isValid([](auto x)->decltype((void)valueT(x).First) {});
+}
+
+namespace _19_4_4_
+{
+	template<typename,typename,typename = std::void_t<>>
+	struct HasT : std::false_type{};
+
+	template<typename T1, typename T2>
+	struct HasT <T1,T2, std::void_t< decltype(std::declval<T1>() + std::declval<T2>())>>: std::true_type{};
+
+	template<typename T1, typename T2,bool = HasT<T1, T2>::value>
+	struct PlusResultT
+	{
+		using Type = decltype(std::declval<T1>() + std::declval<T2>());
+	};
+
+	template<typename T1, typename T2>
+	struct PlusResultT<T1,T2,false>
+	{
+	};
+
+	template<typename T1, typename T2>
+	using PlusResult = typename PlusResultT<T1, T2>::Type;
+
+
+	template<typename T1, typename T2>
+	std::vector<std::remove_cv_t<std::remove_reference_t< PlusResult<T1, T2> > > >
+		operator+(std::vector<T1> const& t1, std::vector<T2> const& t2)
+	{
+		std::vector<std::remove_cv_t<std::remove_reference_t< PlusResult<T1, T2> > > > arr;
+		for (size_t i = 0; i < t1.size(); i++)
+		{
+
+			arr.push_back((t1[i] + t2[i]) / 2);
+		}
+		return arr;
+	}
+
+	struct A {};
+	struct B {};
+	std::vector<A> operator+(std::vector<A> const& arrayA, std::vector<B> const& arrayB)
+	{
+		std::vector<A> b;
+		std::cout << "std::vector<A> + std::vector<B>" << std::endl;
+		return b;
+	}
 }
 
 namespace _19_5_1_
@@ -4034,6 +4106,8 @@ int main()
 			FPrint print("_19_4_1_用 SFINAE 排除某些重载函数");
 			std::cout << _19_4_1_::IsDefaultConstructibleT<int>::value << std::endl;
 			std::cout << _19_4_1_::IsDefaultConstructibleT<int&>::value << std::endl;
+			std::cout << _19_4_1_::IsDefaultConstructibleT1<int>::value << std::endl;
+			std::cout << _19_4_1_::IsDefaultConstructibleT1<int&>::value << std::endl;
 		}
 		// _19_4_2_用 SFINAE 排除某些重载函数
 		{
@@ -4049,6 +4123,25 @@ int main()
 			std::cout << _19_4_3_::isDefaultConstructible(_19_4_3_::type<_19_4_3_::Test>) << std::endl;
 			std::cout << "Has first Test: " << _19_4_3_::HasFirst(_19_4_3_::type<_19_4_3_::Test>) << std::endl;
 			std::cout << "Has first int: " << _19_4_3_::HasFirst(_19_4_3_::type<int>) << std::endl;
+		}
+
+		////_19_4_4_ 将泛型 Lambdas 用于 SFINAE
+		{
+			FPrint print{ "_19_4_4_" };
+			using namespace _19_4_4_;
+			std::vector a{ 1,2,3,4,5 };
+			std::vector b{ 1,2,3,4,5 };
+			std::vector c = _19_4_4_::operator+(a, b);
+			for (int i = 0; i < c.size(); i++)
+			{
+				std::cout << "c[" << i << "] = " << c[i] << std::endl;
+			}
+
+
+			std::vector a1{ A(),A(),A(),A(),A() };
+			std::vector b1{ B(),B(),B(),B(),B() };
+
+			std::vector c1 = _19_4_4_::operator+(a1, b1);
 		}
 
 		// _19_5_1 IsConvertibleT 转换
@@ -4124,10 +4217,10 @@ int main()
 			std::cout << "string operator<()" << _19_6_3_::HasLessT<std::string, int>::value << std::endl;
 		}
 
-		// 19_7_1_ if_then_else
+// 19_7_1_ if_then_else
 		{
-			FPrint print("19_7_1_ if_then_else");
-			_19_7_1_::UnsignedT<int>::Type a = 1;
+		FPrint print("19_7_1_ if_then_else");
+		_19_7_1_::UnsignedT<int>::Type a = 1;
 		}
 
 		// 19_7_2_ 探测不抛出异常
@@ -4174,19 +4267,19 @@ int main()
 			std::cout << "int Test(int i) is function ? " << IsFunctionT<int(int, int)>::value << std::endl;
 			std::cout << "int Test(int i) is function ? " << IsFunctionT<int(int, int) const>::value << std::endl;
 			std::cout << "int Test(int i) is function ? " << IsFunctionT<int(int) volatile>::value << std::endl;
-			std::cout << "int Test(int i) is function ? " << std::is_function_v<int(int) volatile><< std::endl;
-			std::cout << "int Test(int i) is function ? " << std::is_function_v<int><< std::endl;
-			std::cout << "int Test(int i) is function ? " << std::is_const_v<int(int,int)><< std::endl;
-			std::cout << "int Test(int i) is function ? " << std::is_reference_v<int(int,int)><< std::endl;
-			std::cout << "int Test(int i) is function ? " << IsFunctionT<decltype(Test)>::value<< std::endl;
+			std::cout << "int Test(int i) is function ? " << std::is_function_v<int(int) volatile> << std::endl;
+			std::cout << "int Test(int i) is function ? " << std::is_function_v<int> << std::endl;
+			std::cout << "int Test(int i) is function ? " << std::is_const_v<int(int, int)> << std::endl;
+			std::cout << "int Test(int i) is function ? " << std::is_reference_v<int(int, int)> << std::endl;
+			std::cout << "int Test(int i) is function ? " << IsFunctionT<decltype(Test)>::value << std::endl;
 
-	
+
 		}
 
 		// _19_8_4_ 判断class类型
 		{
 			FPrint print("_19_8_4_ 判断class类型");
-			struct Test{};
+			struct Test {};
 			enum ETest
 			{
 
@@ -4210,17 +4303,117 @@ int main()
 
 		// _19_8_5_ 识别枚举类型
 		{
-			FPrint print("_19_8_5_ 识别枚举类型"); 
+			FPrint print("_19_8_5_ 识别枚举类型");
 			struct Test {};
-			enum ETest{};
-			enum class MyEnumClass{};
+			enum ETest {};
+			enum class MyEnumClass {};
 
 			std::cout << "is Test enum ? " << std::is_enum_v<Test> << std::endl;
 			std::cout << "is ETest enum ? " << std::is_enum_v<ETest> << std::endl;
 			std::cout << "is MyEnumClass enum ? " << std::is_enum_v<MyEnumClass> << std::endl;
 			std::cout << "is int enum ? " << std::is_enum_v<int> << std::endl;
+
 		}
 
+	}
+
+	{
+		auto func = [](std::vector<int>& nums) ->bool
+	{
+		std::unordered_set<int> mpa;
+		for (size_t i = 0; i < nums.size(); i++)
+		{
+			if (mpa.find(nums[i])!=mpa.end())
+			{
+				return true;
+			}
+			mpa.insert(nums[i]);
+		}
+		return false;
+	};
+		std::vector nums{ 1,2,3,1 };
+		std::cout<< func(nums)<<std::endl;
+		std::vector nums1{ 1,2,3,4 };
+		std::cout << func(nums1) << std::endl;
+		
+		std::sort(nums.begin(), nums.end());
+
+		using namespace std;
+		auto func1 = [](vector<int>& nums, int target) ->vector<int>
+		{
+			std::map<int, int> map;
+			for (int i = 0; i < nums.size(); i++)
+			{
+				auto other = map.find(target - nums[i]);
+				if (other != map.end())
+				{
+					return { other->second, i};
+				}
+				map[nums[i]] = i;
+			}
+			return {};
+		};
+		std::vector nums2{ 3,2,4 };
+		int target = 6;
+		func1(nums2, target);
+	}
+
+	{
+		struct ListNode 
+		{
+			int val;
+			ListNode* next;
+			ListNode() : val(0), next(nullptr) {}
+			ListNode(int x) : val(x), next(nullptr) {}
+			ListNode(int x, ListNode* next) : val(x), next(next) {}
+		};
+		ListNode* tl1 = new ListNode(2);
+		ListNode* tl1_1 = new ListNode(4);
+		ListNode* tl1_2 = new ListNode(3);
+		tl1->next = tl1_1;
+		tl1_1->next = tl1_2;
+
+		ListNode* tl2 = new ListNode(5);
+		ListNode* tl2_1 = new ListNode(6);
+		ListNode* tl2_2 = new ListNode(4);
+		tl2->next = tl2_1;
+		tl2_1->next = tl2_2;
+		auto func = [](int numIndex) -> int
+		{
+			int unit = 1;
+			for (int i = 0; i < numIndex-1; i++)
+			{
+				unit = unit * 10;
+			}
+			return unit;
+		};
+
+		auto func2 = [](ListNode* tl1)->int
+		{
+			int num = 0;
+			while (tl1)
+			{
+				num++;
+				tl1 = tl1->next;
+			}
+			return num;
+		};
+		auto func1 = [func, func2](ListNode* tl1) -> int
+		{
+			int a = 0;
+			while (tl1)
+			{
+				int tIndex= func2(tl1);
+				a += tl1->val * func(tIndex);
+				tl1 = tl1->next;
+				tIndex++;
+			}
+			return a;
+		};
+		int num1 = func1(tl1);
+		int num2 = func1(tl2);
+
+		int num3 = num1 + num2;
 	}
 	return 0;
 }
