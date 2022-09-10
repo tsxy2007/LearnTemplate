@@ -4378,42 +4378,36 @@ int main()
 		ListNode* tl2_2 = new ListNode(4);
 		tl2->next = tl2_1;
 		tl2_1->next = tl2_2;
-		auto func = [](int numIndex) -> int
-		{
-			int unit = 1;
-			for (int i = 0; i < numIndex-1; i++)
-			{
-				unit = unit * 10;
-			}
-			return unit;
-		};
 
-		auto func2 = [](ListNode* tl1)->int
+		
+		ListNode* head = nullptr, * tail = nullptr;
+		int carry = 0;
+		while (tl1 || tl2)
 		{
-			int num = 0;
-			while (tl1)
+			int num1 = tl1 ? tl1->val : 0;
+			int num2 = tl2 ? tl2->val : 0;
+			int sum = num1 + num2 + carry;
+			if (!head) {
+				head = tail = new ListNode(sum % 10);
+			}
+			else {
+				tail->next = new ListNode(sum % 10);
+				tail = tail->next;
+			}
+			carry = sum / 10;
+			if (tl1)
 			{
-				num++;
 				tl1 = tl1->next;
 			}
-			return num;
-		};
-		auto func1 = [func, func2](ListNode* tl1) -> int
-		{
-			int a = 0;
-			while (tl1)
+			if (tl2)
 			{
-				int tIndex= func2(tl1);
-				a += tl1->val * func(tIndex);
-				tl1 = tl1->next;
-				tIndex++;
+				tl2 = tl2->next;
 			}
-			return a;
-		};
-		int num1 = func1(tl1);
-		int num2 = func1(tl2);
-
-		int num3 = num1 + num2;
+		}
+		if (carry)
+		{
+			tail->next = new ListNode(carry);
+		}
 	}
 	return 0;
 }
