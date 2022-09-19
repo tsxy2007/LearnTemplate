@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <map>
 #include <set>
+#include <cstring>
 
 class FPrint
 {
@@ -4318,6 +4319,7 @@ int main()
 	}
 
 	{
+	FPrint print("两数之和");
 		auto func = [](std::vector<int>& nums) ->bool
 	{
 		std::unordered_set<int> mpa;
@@ -4359,6 +4361,7 @@ int main()
 	}
 
 	{
+		FPrint print("两数相加");
 		struct ListNode 
 		{
 			int val;
@@ -4408,6 +4411,114 @@ int main()
 		{
 			tail->next = new ListNode(carry);
 		}
+	}
+	{
+		//无重复字符的最长子串
+		FPrint print("无重复字符的最长子串");
+		std::string s = "aab";
+		std::string max = "";
+		std::string cur = "";
+		int index = 0;
+		for (size_t i = 0; i < s.size(); )
+		{
+			char c = s[i];
+			std::string tmp;
+			tmp.push_back(c);
+			std::cout << tmp << ' ';
+			if (cur.find(tmp) == std::string::npos)
+			{
+				cur.push_back(s[i]);
+				i++;
+			}
+			else
+			{
+				if (cur.size() > max.size())
+				{
+					max = cur;
+				}
+				i = index + 1;
+				index++;
+				cur = "";
+				std::cout << std::endl;
+			}
+		}
+		if (cur.size() > max.size())
+		{
+			max = cur;
+		}
+		
+		std::cout << "max = " << max << " size = " << max.size() << std::endl;
+
+		auto findMaxStrfunc = [](std::string s)->std::string
+		{
+			std::string Max = ""; 
+			int maxStr = 0;
+			std::unordered_set<char> lookup;
+			int left = 0;
+			for (size_t i = 0; i < s.size(); i++)
+			{
+				while (lookup.find(s[i]) != lookup.end())
+				{
+					lookup.erase(s[left]);
+					left++;
+				}
+
+				maxStr = maxStr > i - left + 1 ? maxStr : i - left + 1;
+				lookup.insert(s[i]);
+			}
+			for (const char& character : lookup)
+				Max += character;
+			return Max;
+		};
+
+		std::string maxss = findMaxStrfunc(s);
+
+		std::cout << maxss << maxss.size() << std::endl;
+	}
+	{
+		FPrint print("测试内存占用");
+		using std::cout;
+		using std::endl;
+		struct A
+		{
+			int x : 20;
+			int y : 10;
+			int z : 2;
+			int m : 1;
+
+			void* operator new(size_t size)
+			{
+				void* a = malloc(size);
+				return a;
+			}
+
+			void* operator new[](size_t size)
+			{
+				void* a = malloc(size);
+				return a;
+			}
+
+			void operator delete(void* p, void*)
+			{
+				cout << "operator delete(void* p, void*), p = " << p << " size = " << sizeof(p) << endl;
+				free(p);
+			}
+
+			void  operator delete[](void* p, size_t size)
+			{
+				cout << "operator delete(), p = " << p << " size = " << size << endl;
+				free(p);
+			}
+		};
+
+		std::cout << sizeof(A)<<std::endl;
+
+		A* buf = (A*)(new A[10]);
+		//A* buf = new A();
+
+		char* temp = reinterpret_cast<char*>(buf);
+
+		delete[] buf;
 	}
 	return 0;
 }
