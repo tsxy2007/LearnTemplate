@@ -3313,14 +3313,14 @@ namespace _19_8_3_
 
 namespace _19_8_4_
 {
-	template<typename T,typename = std::void_t<>>
+	template<typename T, typename = std::void_t<>>
 	struct IsClassT : std::false_type
 	{
 
 	};
 
 	template<typename T>
-	struct IsClassT < T,std::void_t<int T::*>> : std::true_type
+	struct IsClassT < T, std::void_t<int T::*>> : std::true_type
 	{
 
 	};
@@ -3328,7 +3328,13 @@ namespace _19_8_4_
 	template<typename T>
 	constexpr bool IsClass_v = IsClassT<T>::value;
 }
-
+namespace _19_8_5_
+{
+	template<typename T> struct IsEnumT
+	{
+		static constexpr bool value = !IsFundaT<T>::value && !IsPointerT<T>::value && !IsReferenceT<T>::value && !IsArrayT<T>::value && !IsPointerToMemberT<T>::value && !IsFunctionT<T>::value && !IsClassT<T>::value;
+	};
+}
 int size = 10;
 int main()
 {
