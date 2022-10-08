@@ -4029,6 +4029,213 @@ namespace _21_1_1_2_
 	};
 }
 
+namespace _21_2_3_
+{
+	template<typename Derived,typename Value,typename Category,
+	typename Reference = Value&,typename Distance = std::ptrdiff_t>
+	class IteratorFacade
+	{
+	public:
+		using value_type = typename std::remove_const_t<Value>;
+		using reference = Reference;
+		using pointer = Value*;
+		using difference_type = Distance;
+		using iterator_category = Category;
+
+
+		Derived& operator--()
+		{
+
+		}
+
+		Derived operator--(int)
+		{
+
+		}
+
+		reference operator[](difference_type n)
+		{
+
+		}
+
+		Derived& operator+=(difference_type n)
+		{
+
+		}
+
+		friend difference_type operator-(IteratorFacade const& lhs, IteratorFacade const& rhs)
+		{
+			return lhs - rhs;
+		}
+
+		friend bool operator<(IteratorFacade const& lhs, IteratorFacade const& rhs)
+		{
+
+		}
+
+		Derived& asDerived()
+		{
+			return *static_cast<Derived*>(this);
+		}
+
+		Derived const& asDerived() const
+		{
+			return *static_cast<Derived const*>(this);
+		}
+
+		reference operator*()const
+		{
+			return asDerived().dereference();
+		}
+
+		Derived& operator++()
+		{
+			asDerived().increment();
+			return asDerived();
+		}
+
+		Derived operator++(int) 
+		{ 
+			Derived result(asDerived()); 
+			asDerived().increment(); 
+			return result; 
+		}
+		
+		friend bool operator== (IteratorFacade const& lhs, IteratorFacade const& rhs) 
+		{ 
+			return lhs.asDerived().equals(rhs.asDerived());
+		}
+	};
+
+	template<typename T>
+	class ListNode
+	{
+	public:
+		T value;
+		ListNode<T>* next = nullptr;
+
+		~ListNode()
+		{
+			delete next;
+		}
+	private:
+
+	};
+
+	template<typename T>
+	class ListNodeIterator : public IteratorFacade<ListNodeIterator<T>,T,std::forward_iterator_tag>
+	{
+		ListNode<T>* current = nullptr;
+	public:
+		T& dereference() const
+		{
+			return current->value;
+		}
+
+		void increment()
+		{
+			current = current->next;
+		}
+
+		bool equals(ListNodeIterator const& other) const
+		{
+			return current == other.current;
+		}
+
+		ListNodeIterator(ListNode<T>* inCurrent = nullptr) : current(inCurrent)
+		{
+
+		}
+
+	private:
+
+	};
+
+	class IteratorFacadeAccess
+	{
+	private:
+		template<typename Devrived,typename Value,typename Category,
+		typename Reference,typename Distance>
+		friend class IteratorFacade;
+
+		template<typename Reference,typename Iterator>
+		static Reference dereference(Iterator const& i)
+		{
+			return i.dereference();
+		}
+
+		template<typename Iterator>
+		static void decrement(Iterator& i)
+		{
+			return i.decrement();
+		}
+
+		template<typename Iterator,typename Distance>
+		static void advance(Iterator& i, Distance n)
+		{
+			return i.advance(n);
+		}
+
+	};
+
+	struct Person
+	{
+		std::string firstName;
+		std::string lastName;
+
+		friend std::ostream& operator<<(std::ostream& strm, Person const& p)
+		{
+			return strm << p.lastName << ", " << p.firstName;
+		}
+	};
+
+	template<typename Iterator,typename T>
+	class ProjectionIterator : public IteratorFacade<ProjectionIterator<Iterator,T>,T,
+	typename std::iterator_traits<Iterator>::iterator_category,T&,typename
+	std::iterator_traits<Iterator>::difference_type>
+	{
+		using Base = typename std::iterator_traits<Iterator>::value_type;
+		using Distance = typename std::iterator_traits<Iterator>::difference_type;
+		Iterator iter;
+		T Base::* member;
+		friend class IteratorFacadeAccess;
+	public:
+		ProjectionIterator(Iterator inIter, T Base::* inMember)
+			: iter(inIter), member(inMember)
+		{
+
+		}
+
+		T& dereference() const
+		{
+			return (*iter).*member;
+		}
+
+		void increment()
+		{
+			++iter;
+		}
+
+		bool equals(ProjectionIterator const& other) const
+		{
+			return iter == other.iter;
+		}
+
+		void decrement()
+		{
+			--iter;
+		}
+	private:
+
+	};
+
+	template<typename Iterator,typename Base,typename T>
+	auto project(Iterator iter, T Base::* member)
+	{
+		return ProjectionIterator<Iterator, T>(iter, member);
+	}
+}
+
 int size = 10;
 int main()
 {
@@ -5380,7 +5587,19 @@ std::cout << *iva << " " << *ila << std::endl;
 			std::cout << "sizeof(NonEmpty)" << sizeof(NonEmpty) << std::endl;
 		}
 		{
-			std::vector<int> a{ 1,2,3 };
+			FPrint print("ตฺ21ีย Facades");
+			using namespace _21_2_3_;
+			std::vector<Person> authors = { 
+				{"David", "Vandevoorde"}, 
+				{"Nicolai", "Josuttis"}, 
+				{"Douglas", "Gregor"}
+			}; 
+			std::copy(project(authors.begin(), &Person::firstName),
+				project(authors.end(), &Person::firstName), 
+				std::ostream_iterator<std::string>(std::cout, "\n"));
+		}
+		{
+			std::list<int> a{ 1,2,3 };
 			auto abeg = a.begin();
 		}
 	}
