@@ -13,6 +13,8 @@
 #include <map>
 #include <set>
 #include <cstring>
+#include <type_traits>
+//#include <utility>
 
 class FPrint
 {
@@ -3328,6 +3330,7 @@ namespace _19_8_4_
 	template<typename T>
 	constexpr bool IsClass_v = IsClassT<T>::value;
 }
+
 namespace _19_8_5_
 {
 	template<typename T> struct IsEnumT
@@ -3335,6 +3338,697 @@ namespace _19_8_5_
 		static constexpr bool value = !IsFundaT<T>::value && !IsPointerT<T>::value && !IsReferenceT<T>::value && !IsArrayT<T>::value && !IsPointerToMemberT<T>::value && !IsFunctionT<T>::value && !IsClassT<T>::value;
 	};
 }
+
+namespace _20_1_
+{
+	template<typename T>
+	void swap(T& x, T& y)
+	{
+		T tmp(x);
+		x = y;
+		y = tmp;
+	}
+
+	template <typename T>
+	void swap(std::vector<T>& x, std::vector<T>& y)
+	{
+		x.swap(y);
+	}
+
+	template<typename InputIterator,typename Distance>
+	void advanceIter(InputIterator& x, Distance n)
+	{
+		while (n>0)
+		{
+			++x;
+			--n;
+		}
+	}
+}
+
+namespace _20_2_
+{
+	template<typename Iterator,typename Distance>
+	void advanceIterImpl(Iterator& x, Distance n, std::input_iterator_tag)
+	{
+		std::cout << "std::input_iterator_tag" << std::endl;
+		while (n > 0)
+		{
+			++x;
+			--n;
+		}
+	}
+
+	template<typename Iterator, typename Distance>
+	void advanceIterImpl(Iterator& x, Distance n, std::random_access_iterator_tag)
+	{
+		std::cout << "std::random_access_iterator_tag" << std::endl;
+		x += n;
+	}
+
+	template<typename Iterator,typename Distance>
+	void advanceIter(Iterator& x, Distance n)
+	{
+		advanceIterImpl(x, n, std::iterator_traits<Iterator>::iterator_category());
+	}
+}
+
+namespace _20_3_
+{
+	template<bool,typename T = void>
+	struct EnableIfT
+	{
+
+	};
+
+	template<typename T>
+	struct EnableIfT<true,T>
+	{
+		using Type = T;
+	};
+
+	template<bool Cond,typename T = void>
+	using EnableIf = typename EnableIfT<Cond, T>::Type;
+
+	template<typename Iterator>
+	constexpr bool IsRandomAccessIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::random_access_iterator_tag>;
+
+	template<typename Iterator,typename Distance>
+	EnableIf<IsRandomAccessIterator<Iterator>> advanceIter(Iterator& x, Distance n)
+	{
+		std::cout << "std::random_access_iterator_tag" << std::endl;
+		x += n;
+	}
+
+	template<typename Iterator,typename Distance>
+	EnableIf<!IsRandomAccessIterator<Iterator>> advanceIter(Iterator& x, Distance n)
+	{
+		std::cout << "std::input_iterator_tag" << std::endl;
+		while (n>0)
+		{
+			++x;
+			--n;
+		}
+	}
+}
+
+namespace _20_3_1_ // 提供多种特化版本
+{
+	template<bool, typename T = void>
+	struct EnableIfT
+	{
+
+	};
+
+	template<typename T>
+	struct EnableIfT<true, T>
+	{
+		using Type = T;
+	};
+
+	template<bool Cond, typename T = void>
+	using EnableIf = typename EnableIfT<Cond, T>::Type;
+
+	template<typename Iterator>
+	constexpr bool IsRandomAccessIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::random_access_iterator_tag>;
+
+	template<typename Iterator>
+	constexpr bool IsBidirectionalIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::bidirectional_iterator_tag>;
+
+	template<typename Iterator, typename Distance>
+	EnableIf<IsRandomAccessIterator<Iterator>> advanceIter(Iterator& x, Distance n)
+	{
+		std::cout << "std::random_access_iterator_tag" << std::endl;
+		x += n;
+	}
+
+	template<typename Iterator, typename Distance>
+	EnableIf<IsBidirectionalIterator<Iterator>
+		&&!IsRandomAccessIterator<Iterator>> advanceIter(Iterator& x, Distance n)
+	{
+		std::cout << "std::bidirectional_iterator_tag" << std::endl;
+		if (n > 0) 
+		{
+			for (; n > 0; ++x, --n) 
+			{ //linear time 
+			} 
+		} 
+		else 
+		{ 
+			for ( ; n < 0; --x, ++n) 
+			{ //linear time 
+			} 
+		}
+	}
+
+	template<typename Iterator, typename Distance>
+	EnableIf<!IsBidirectionalIterator<Iterator>> advanceIter(Iterator& x, Distance n)
+	{
+		if (n < 0) 
+		{ 
+			throw "advanceIter(): invalid iterator category for negative n"; 
+		}
+		std::cout << "std::random_access_iterator_tag" << std::endl;
+		while (n > 0)
+		{
+			++x;
+			--n;
+		}
+	}
+}
+
+namespace _20_3_2_
+{
+	template<bool, typename T = void>
+	struct EnableIfT
+	{
+
+	};
+
+	template<typename T>
+	struct EnableIfT<true, T>
+	{
+		using Type = T;
+	};
+
+	template<bool Cond, typename T = void>
+	using EnableIf = typename EnableIfT<Cond, T>::Type;
+
+	template<typename Iterator>
+	constexpr bool IsRandomAccessIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::random_access_iterator_tag>;
+
+	template<typename Iterator>
+	constexpr bool IsBidirectionalIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::bidirectional_iterator_tag>;
+
+	template<typename Iterator>
+	constexpr bool IsInputIterator = std::is_constructible_v<typename std::iterator_traits<Iterator>::Iterator_category,
+		std::input_iterator_tag>;
+
+	template <typename T>
+	class Container
+	{
+	public:
+		template<typename Iterator,typename = EnableIf<IsInputIterator<Iterator>>>
+		Container(Iterator first, Iterator last)
+		{
+
+		}
+
+		template<typename Iterator,typename =
+		EnableIf<IsRandomAccessIterator<Iterator>>,typename = int>
+		Container(Iterator first, Iterator last)
+		{
+
+		}
+
+		template<typename U,typename = EnableIf<std::is_convertible_v<T,U>>>
+		operator Container<U>()const
+		{
+
+		}
+	private:
+
+	};
+}
+
+namespace _20_3_3_ 
+{
+	//编译期 if
+
+	template<typename Iterator>
+	constexpr bool IsRandomAccessIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::random_access_iterator_tag>;
+
+	template<typename Iterator>
+	constexpr bool IsBidirectionalIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::bidirectional_iterator_tag>;
+
+	template<typename Iterator>
+	constexpr bool IsInputIterator = std::is_constructible_v<typename std::iterator_traits<Iterator>::Iterator_category,
+		std::input_iterator_tag>;
+
+	template<typename Iterator,typename Distance>
+	void advanceIter(Iterator& x, Distance n)
+	{
+		if constexpr(IsRandomAccessIterator<Iterator>)
+		{
+			std::cout << "std::IsRandomAccessIterator" << std::endl;
+			x += n;
+		}
+		else if constexpr(IsBidirectionalIterator<Iterator>)
+		{
+			std::cout << "std::bidirectional_iterator_tag" << std::endl;
+			if (n > 0)
+			{
+				for (; n > 0; ++x, --n)
+				{ //linear time 
+				}
+			}
+			else
+			{
+				for (; n < 0; --x, ++n)
+				{ //linear time 
+				}
+			}
+		}
+		else
+		{
+			std::cout << "std::input_iterator_tag" << std::endl;
+			if (n<0)
+			{
+				throw "advanceIter(): invalid iterator category for negative n";
+			}
+			while (n > 0)
+			{
+				++x;
+				--n;
+			}
+		}
+	}
+}
+
+namespace _20_3_4_
+{
+	//Concepts
+
+	template<typename Iterator>
+	concept IsRandomAccessIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::random_access_iterator_tag>;
+
+	template<typename Iterator>
+	concept IsBidirectionalIterator = std::is_convertible_v<typename std::iterator_traits<Iterator>::iterator_category,
+		std::bidirectional_iterator_tag>;
+
+	template<typename Iterator>
+	concept IsInputIterator = std::is_constructible_v<typename std::iterator_traits<Iterator>::Iterator_category,
+		std::input_iterator_tag>;
+
+
+	template<typename Iterator, typename Distance>
+	requires(!IsBidirectionalIterator<Iterator>)
+	void advanceIter(Iterator& x, Distance n)
+	{
+		std::cout << "std::IsInputIterator" << std::endl;
+		while (n > 0)
+		{
+			++x;
+			--n;
+		}
+	}
+
+
+	template<typename Iterator, typename Distance>
+	requires(IsRandomAccessIterator<Iterator>)
+	void advanceIter(Iterator& x, Distance n)
+	{
+		std::cout << "std::IsRandomAccessIterator" << std::endl;
+		x += n;
+	}
+
+	template<typename Iterator, typename Distance>
+	requires(IsBidirectionalIterator<Iterator>
+	&& !IsRandomAccessIterator<Iterator>)
+	void advanceIter(Iterator& x, Distance n)
+	{
+		std::cout << "std::bidirectional_iterator_tag" << std::endl;
+		if (n > 0)
+		{
+			for (; n > 0; ++x, --n)
+			{ //linear time 
+			}
+		}
+		else
+		{
+			for (; n < 0; --x, ++n)
+			{ //linear time 
+			}
+		}
+	}
+
+	template<typename T>
+	class Container
+	{
+	public:
+		template<typename Iterator>
+		requires IsInputIterator<Iterator>
+		Container(Iterator first, Iterator last)
+		{
+
+		}
+		
+		template<typename Iterator> 
+		requires IsRandomAccessIterator<Iterator> 
+		Container(Iterator first, Iterator last)
+		{
+
+		}
+
+		template<typename U> 
+		requires IsConvertible<T, U> 
+		operator Container<U>() const
+		{
+
+		}
+	private:
+
+	};
+
+	
+}
+
+namespace _20_4_1_
+{
+	template<bool, typename T = void>
+	struct EnableIfT
+	{
+
+	};
+
+	template<typename T>
+	struct EnableIfT<true, T>
+	{
+		using Type = T;
+	};
+
+	template<bool Cond, typename T = void>
+	using EnableIf = typename EnableIfT<Cond, T>::Type;
+
+	template<typename, typename, typename = std::void_t<>>
+	struct HasLessT : std::false_type {};
+
+	template<typename T1, typename T2>
+	struct  HasLessT < T1, T2, std::void_t< decltype(std::declval<T1>() < std::declval<T2>())> > : std::true_type{};
+
+	template<typename T1,typename T2>
+	constexpr bool Hasless = HasLessT<T1, T2>::value;                                     
+
+	template<typename Key,typename Value,typename = void>
+	class Dictionnary
+	{
+	public:
+		Dictionnary()
+		{
+			std::cout << "1111111111" << std::endl;
+		}
+	private:
+		std::vector<Value> data;
+	};
+
+	template<typename Key, typename Value>
+	class Dictionnary<Key, Value, EnableIf<Hasless<Key, Key>>>
+	{
+	public:
+		Dictionnary()
+		{
+			std::cout << "2222222222222" << std::endl;
+		}
+
+	private:
+		std::map<Key, Value> data;
+	};
+
+}
+
+namespace _20_4_2_
+{
+	// 类模板的标记派发
+	template<typename... Types>
+	struct MatchOverloads;
+
+	template<>
+	struct MatchOverloads<>
+	{
+		static void match(...);
+	};
+	template<typename T1,typename... Rest>
+	struct MatchOverloads<T1,Rest...> : public MatchOverloads<Rest...>
+	{
+		static T1 match(T1);
+		using MatchOverloads<Rest...>::match;
+	};
+
+	template<typename T,typename ... Types>
+	struct BestMatchInSetT
+	{
+		using Type = decltype(MatchOverloads<Types...>::match(std::declval<T>()));
+	};
+	
+	template<typename T, typename ... Types>
+	using BestMatchInSet = typename BestMatchInSetT<T, Types...>::Type;
+
+	template<typename Iterator,
+		typename Tag = BestMatchInSet<typename std::iterator_traits<Iterator>::iterator_category,
+		std::input_iterator_tag,
+		std::bidirectional_iterator_tag,
+		std::random_access_iterator_tag>>
+	class Advance;
+
+	template<typename Iterator>
+	class Advance<Iterator,std::input_iterator_tag>
+	{
+	public:
+		using DefferenceType = typename std::iterator_traits<Iterator>::difference_type;
+
+		void operator()(Iterator& x, DefferenceType n) const
+		{
+			std::cout << "std::input_iterator_tag" << std::endl;
+			while (n > 0)
+			{
+				++x;
+				--n;
+			}
+		}
+
+	private:
+
+	};
+
+	template<typename Iterator>
+	class Advance<Iterator, std::bidirectional_iterator_tag>
+	{
+	public:
+		using DefferenceType = typename std::iterator_traits<Iterator>::difference_type;
+
+		void operator()(Iterator& x, DefferenceType n) const
+		{
+			std::cout << "std::bidirectional_iterator_tag" << std::endl;
+			if (n > 0)
+			{
+				for (; n > 0; ++x, --n)
+				{ //linear time 
+				}
+			}
+			else
+			{
+				for (; n < 0; --x, ++n)
+				{ //linear time 
+				}
+			}
+		}
+
+	private:
+
+	};
+
+
+	template<typename Iterator>
+	class Advance<Iterator, std::random_access_iterator_tag>
+	{
+	public:
+		using DefferenceType = typename std::iterator_traits<Iterator>::difference_type;
+
+		void operator()(Iterator& x, DefferenceType n) const
+		{
+			std::cout << "std::random_access_iterator_tag" << std::endl;
+			x += n;
+		}
+
+	private:
+
+	};
+
+	template<typename Iterator,typename Distance>
+	void advanceIter(Iterator& x, Distance n)
+	{
+		Advance<Iterator> a;
+		a(x, n);
+	}
+}
+
+namespace _20_5_
+{
+
+	template<typename FROM, typename TO>
+	struct IsConvertibleT {
+	private:
+		// to check whether we can call this helper func for a FROM object:
+		static void func(TO);
+		// test() trying to call the helper func():
+		template<typename F, typename T,
+			typename = decltype(func(std::declval<F>()))>
+		static char test(void*);
+		// test() fallback:
+		template<typename, typename>
+		static long test(...);
+	public:
+		static constexpr bool value = sizeof(test<FROM, TO>(nullptr)) == 1;
+	};
+
+	template<typename FROM, typename TO>
+	constexpr bool IsConvertible = IsConvertibleT<FROM, TO>::value;
+
+	template<bool, typename T = void>
+	struct EnableIfT
+	{
+
+	};
+
+	template<typename T>
+	struct EnableIfT<true, T>
+	{
+		using Type = T;
+	};
+
+	template<bool Cond, typename T = void>
+	using EnableIf = typename EnableIfT<Cond, T>::Type;
+
+	template<typename T1,typename T2>
+	class HasLess
+	{
+	private:
+		template<typename T> struct Identity;
+
+		template<typename U1,typename U2>
+		static std::true_type test(Identity<decltype(std::declval<U1>() < std::declval<U2>())>*);
+
+		template<typename U1,typename U2>
+		static std::false_type test(...);
+	public:
+		static constexpr bool value = decltype(test<T1, T2>(nullptr))::value;
+	};
+
+	template<typename T1,typename T2,bool HasLess>
+	class LessResultImpl
+	{
+	public:
+		using Type = decltype(std::declval<T1>() < std::declval<T2>());
+	};
+	
+	template<typename T1,typename T2>
+	class LessResultImpl<T1,T2,false>
+	{
+	public:
+
+	};
+
+	template<typename T1,typename T2>
+	class LessResultT : public LessResultImpl<T1,T2,HasLess<T1,T2>::value>
+	{
+	};
+
+	template<typename T1, typename T2> 
+	using LessResult = typename LessResultT<T1, T2>::Type;
+
+	template<typename T>
+	EnableIf<IsConvertible<LessResult<T const&,T const&>,bool>,T const&>
+	min(T const& x, T const& y)
+	{
+		if (y < x)
+		{
+			return y;
+		}
+		return x;
+	}
+
+	struct X1{};
+	bool operator<(X1 const&, X1 const&) { return true; }
+
+	struct X2{};
+	bool operator<(X2, X2) { return true; }
+
+	struct X3{};
+	bool operator<(X3&, X3&) { return true; }
+
+	struct X4{};
+
+	struct BoolConvertible
+	{
+		operator bool() const { return true; }
+	};
+
+	struct NotBoolConvertible
+	{
+
+	};
+
+	struct X5{};
+	BoolConvertible operator<(X5 const&, X5 const&)
+	{
+		return BoolConvertible();
+	}
+
+	struct  X6 {};
+	NotBoolConvertible operator<(X6 const&, X6 const&)
+	{
+		return NotBoolConvertible();
+	}
+
+	struct BoolLike
+	{
+		explicit operator bool() const { return true; }
+	};
+	
+	struct X7 {};
+	BoolLike operator<(X7 const&, X7 const&) { return BoolLike(); }
+}
+
+namespace _21_1_1_1_
+{
+	class Empty
+	{
+		using Int = int;
+	};
+
+	class EmptyToo : public Empty
+	{
+
+	};
+
+	class EmptyThree : public EmptyToo
+	{
+
+	};
+}
+
+namespace _21_1_1_2_
+{
+	class Empty
+	{
+		using Int = int;
+		int a;
+	};
+
+	class EmptyToo : public Empty
+	{
+
+	};
+
+	class EmptyThree : public EmptyToo
+	{
+
+	};
+
+	class NonEmpty :public Empty, public EmptyToo
+	{
+
+	};
+}
+
 int size = 10;
 int main()
 {
@@ -3922,6 +4616,7 @@ int main()
 	//------------------------------------------------18-----------------------------------------------------------
 	{}
 	{
+		FPrint print("第18章");
 		// 18.1
 		{
 			using namespace _18_1_;
@@ -3963,9 +4658,8 @@ int main()
 	}
 
 	//------------------------------------------19----------------------------------------------------------------
-
-	{}
 	{
+		FPrint print("第19章");
 		// 19_1_1_
 		{
 			int num[] = { 1,2,3,4,5 };
@@ -4323,7 +5017,9 @@ int main()
 		}
 
 	}
-
+	
+{
+}
 	{
 	FPrint print("两数之和");
 		auto func = [](std::vector<int>& nums) ->bool
@@ -4525,6 +5221,168 @@ int main()
 		char* temp = reinterpret_cast<char*>(buf);
 
 		delete[] buf;
+	}
+
+	// _20_1_.........
+	{
+		FPrint print("第20章");
+		{
+			// 20_1 算法特化
+			FPrint print("第20章第一节");
+			int a = 1;
+			int b = 2;
+			_20_1_::swap(a, b);
+			std::cout << "a = " << a << " " << "b = " << b << std::endl;
+
+			std::vector<int> va = { 1,2,3 };
+			std::vector<int> vb = { 5,6,7 };
+			_20_1_::swap(va, vb);
+			for (size_t i = 0; i < va.size(); i++)
+			{
+				std::cout << "交换后的数据为：" << va[i] << std::endl;
+			}
+			std::vector<int>::iterator itera = va.begin();
+			auto iterb = vb.begin();
+			_20_1_::advanceIter(itera, 2);
+			std::advance(iterb, 2);
+			std::cout << *itera << " " << *iterb << std::endl;
+		}
+		{
+
+			FPrint print("第20章第一节 标记派发（Tag Dispatching）");
+			std::vector<int> va = { 1,2,3 };
+			std::list<int> la = { 1,2,3 };
+
+			auto iva = va.begin();
+			auto ila = la.begin();
+			_20_2_::advanceIter(iva, 2);
+			_20_2_::advanceIter(ila, 2);
+			std::cout << *iva << " " << *ila << std::endl;
+		}
+
+		{
+
+FPrint print("第20章 Enable/disable函数模板");
+std::vector<int> va = { 1,2,3 };
+std::list<int> la = { 1,2,3 };
+
+auto iva = va.begin();
+auto ila = la.begin();
+_20_3_::advanceIter(iva, 2);
+_20_3_::advanceIter(ila, 2);
+std::cout << *iva << " " << *ila << std::endl;
+		}
+
+		{
+
+		FPrint print("第20章 提供多种特化版本");
+		std::vector<int> va = { 1,2,3 };
+		std::list<int> la = { 1,2,3 };
+
+		auto iva = va.begin();
+		auto ila = la.begin();
+		_20_3_1_::advanceIter(iva, 2);
+		_20_3_1_::advanceIter(ila, 2);
+		std::cout << *iva << " " << *ila << std::endl;
+		}
+
+		{
+
+			FPrint print("第20章 编译期 if");
+			std::vector<int> va = { 1,2,3 };
+			std::list<int> la = { 1,2,3 };
+
+			auto iva = va.begin();
+			auto ila = la.begin();
+			_20_3_3_::advanceIter(iva, 2);
+			_20_3_3_::advanceIter(ila, 2);
+			std::cout << *iva << " " << *ila << std::endl;
+		}
+
+		{
+
+			FPrint print("第20章 Concepts");
+			std::vector<int> va = { 1,2,3 };
+			std::list<int> la = { 1,2,3 };
+
+			auto iva = va.begin();
+			auto ila = la.begin();
+			_20_3_4_::advanceIter(iva, 2);
+			_20_3_4_::advanceIter(ila, 2);
+			std::cout << *iva << " " << *ila << std::endl;
+		}
+
+		{
+			FPrint print("第20章 启用/禁用类模板");
+
+			struct MyStruct
+			{
+				MyStruct() : x(0) {}
+				MyStruct(int tx) : x(tx) {}
+
+				/*bool operator<(const MyStruct& other)
+				{
+					return x < other.x;
+				}*/
+				int x = 0;
+			};
+			using namespace _20_4_1_;
+			_20_4_1_::Dictionnary<int, int> a;
+			_20_4_1_::Dictionnary<MyStruct, int> b;
+			std::cout << "MyStruct Has less ? " << _20_4_1_::HasLessT<MyStruct, MyStruct>::value << std::endl;
+		}
+
+		{
+
+			FPrint print("第20章 类模板的标记派发");
+			std::vector<int> va = { 1,2,3 };
+			std::list<int> la = { 1,2,3 };
+
+			auto iva = va.begin();
+			auto ila = la.begin();
+
+			_20_4_2_::advanceIter(iva, 2);
+			_20_4_2_::advanceIter(ila, 2);
+
+			std::cout << *iva << " " << *ila << std::endl;
+		}
+
+		{
+			FPrint print("第20章 实例化安全的模板");
+			using namespace _20_5_;
+			min(X1(), X1());
+			min(X2(), X2());
+			//min(X3(), X3()); // error 未找到匹配的重载函数
+			//min(X4(), X4());// error 未找到匹配的重载函数
+			min(X5(), X5()); // error 未找到匹配的重载函数
+			//min(X6(), X6());// error 未找到匹配的重载函数
+			//min(X7(), X7());// error 未找到匹配的重载函数
+		}
+	}
+
+	// 第21章
+	{}
+	{
+		FPrint PrintT("第21章");
+		{
+			using namespace _21_1_1_1_;
+			FPrint print("第21章 布局原则(1)");
+			std::cout << "sizeof(Empty)" << sizeof(Empty) << std::endl;
+			std::cout << "sizeof(EmptyToo)" << sizeof(EmptyToo) << std::endl;
+			std::cout << "sizeof(EmptyThree)" << sizeof(EmptyThree) << std::endl;
+		}
+
+		{
+			using namespace _21_1_1_2_;
+			FPrint print("第21章 布局原则(2)");
+			std::cout << "sizeof(Empty)" << sizeof(Empty) << std::endl;
+			std::cout << "sizeof(EmptyToo)" << sizeof(EmptyToo) << std::endl;
+			std::cout << "sizeof(NonEmpty)" << sizeof(NonEmpty) << std::endl;
+		}
+		{
+			std::vector<int> a{ 1,2,3 };
+			auto abeg = a.begin();
+		}
 	}
 	return 0;
 }
