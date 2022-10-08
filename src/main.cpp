@@ -4065,7 +4065,7 @@ namespace _21_2_3_
 
 		friend difference_type operator-(IteratorFacade const& lhs, IteratorFacade const& rhs)
 		{
-			return lhs - rhs;
+			return lhs.measureDistance(rhs);
 		}
 
 		friend bool operator<(IteratorFacade const& lhs, IteratorFacade const& rhs)
