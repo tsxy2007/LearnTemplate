@@ -4063,9 +4063,14 @@ namespace _21_2_3_
 
 		}
 
+		friend bool operator== (IteratorFacade const& lhs, IteratorFacade const& rhs)
+		{
+			return lhs.asDerived().equals(rhs.asDerived());
+		}
+
 		friend difference_type operator-(IteratorFacade const& lhs, IteratorFacade const& rhs)
 		{
-			return lhs.measureDistance(rhs);
+			return lhs.asDerived().measureDistance(rhs.asDerived());
 		}
 
 		friend bool operator<(IteratorFacade const& lhs, IteratorFacade const& rhs)
@@ -4101,10 +4106,6 @@ namespace _21_2_3_
 			return result; 
 		}
 		
-		friend bool operator== (IteratorFacade const& lhs, IteratorFacade const& rhs) 
-		{ 
-			return lhs.asDerived().equals(rhs.asDerived());
-		}
 	};
 
 	template<typename T>
@@ -4176,6 +4177,11 @@ namespace _21_2_3_
 			return i.advance(n);
 		}
 
+		template<typename Iterator,typename Distance>
+		static Distance measureDistance(Iterator const& lhs, Iterator const& rhs)
+		{
+			return lhs.measureDistance(rhs);
+		}
 	};
 
 	struct Person
@@ -4198,7 +4204,7 @@ namespace _21_2_3_
 		using Distance = typename std::iterator_traits<Iterator>::difference_type;
 		Iterator iter;
 		T Base::* member;
-		friend class IteratorFacadeAccess;
+		//friend class IteratorFacadeAccess;
 	public:
 		ProjectionIterator(Iterator inIter, T Base::* inMember)
 			: iter(inIter), member(inMember)
@@ -4224,6 +4230,12 @@ namespace _21_2_3_
 		void decrement()
 		{
 			--iter;
+		}
+
+		Distance measureDistance( ProjectionIterator const& rhs) const
+		{
+			Distance d = iter - rhs.iter;
+			return d;
 		}
 	private:
 
@@ -5594,13 +5606,35 @@ std::cout << *iva << " " << *ila << std::endl;
 				{"Nicolai", "Josuttis"}, 
 				{"Douglas", "Gregor"}
 			}; 
-			std::copy(project(authors.begin(), &Person::firstName),
-				project(authors.end(), &Person::firstName), 
+			std::copy(project(authors.begin(), &Person::lastName),
+				project(authors.end(), &Person::lastName),
 				std::ostream_iterator<std::string>(std::cout, "\n"));
+
+			std::vector<Person> copyPersons;
+
 		}
 		{
-			std::list<int> a{ 1,2,3 };
-			auto abeg = a.begin();
+			using namespace _21_2_3_;
+			std::vector<Person> authors = {
+				{"David", "Vandevoorde"},
+				{"Nicolai", "Josuttis"},
+				{"Douglas", "Gregor"}
+			};
+			std::vector<int> a{ 1,2,3 };
+			auto aBeg = authors.begin();
+			auto aEnd = authors.end();
+			auto tmp = aEnd - aBeg;
+			std::cout << "tmp = " << tmp << std::endl;
+
+			Person aa[] = { {"David", "Vandevoorde"},
+				{"Nicolai", "Josuttis"} };
+			Person* bb = aa;
+		
+			 
+			int cc = (&bb[1] - &bb[0]);
+
+			std::cout << "cc = " << cc << std::endl;
+
 		}
 	}
 	return 0;
