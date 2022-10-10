@@ -4029,6 +4029,141 @@ namespace _21_1_1_2_
 	};
 }
 
+namespace _21_1_2_
+{
+	template<typename Base,typename Member>
+	class BaseMemberPair : public Base
+	{
+	private:
+		Member mem;
+	public:
+		BaseMemberPair(Base const& b, Member const& im) : Base(b), mem(im)
+		{
+
+		}
+
+		Base const& base()const
+		{
+			return static_cast<Base const&>(*this);
+		}
+
+		Base& base()
+		{
+			return static_cast<Base&>(*this);
+		}
+
+		Member const& member()const
+		{
+			return this->mem;
+		}
+
+		Member& member()
+		{
+			return this->mem;
+		}
+	};
+
+	template<typename CustomClass>
+	class Optimizable
+	{
+	private:
+		BaseMemberPair<CustomClass, void*> info_and_storage;
+	};
+}
+
+namespace _21_2_1_
+{
+	template<typename Devrived>
+	class CuriousBase
+	{
+
+	};
+
+	class Curious : public CuriousBase<Curious>
+	{
+
+	};
+}
+
+namespace _21_2_2_
+{
+	template<typename Devrived>
+	class CuriousBase
+	{
+
+	};
+
+	template<typename T>
+	class CuriousTemplate : public CuriousBase<CuriousTemplate<T>>
+	{
+
+	};
+}
+
+namespace _21_2_2_1_
+{
+	template<typename CountedType>
+	class ObjectCounter
+	{
+	private:
+		inline static std::size_t count = 0;
+	protected:
+		ObjectCounter()
+		{
+			++count;
+		}
+
+		ObjectCounter(ObjectCounter<CountedType> const&)
+		{
+			++count;
+		}
+
+		ObjectCounter(ObjectCounter<CountedType>&&)
+		{
+			++count;
+		}
+
+		~ObjectCounter()
+		{
+			--count;
+		}
+
+	public:
+		static std::size_t live()
+		{
+			return count;
+		}
+	};
+
+	template<typename T>
+	class FTest : public ObjectCounter<FTest<T>>
+	{
+
+	};
+}
+
+namespace _21_2_2_2_
+{
+	template<typename Devried>
+	class EqualityComparable
+	{
+	public :
+		friend bool operator!=(Devried const& x1, Devried const& x2)
+		{
+			return !(x1 == x2);
+		}
+	};
+
+	class X : public EqualityComparable<X>
+	{
+	public:
+		friend bool operator==(X const& x1, X const& x2)
+		{
+			return false;
+		}
+	};
+}
+
 namespace _21_2_3_
 {
 	template<typename Derived,typename Value,typename Category,
@@ -4246,6 +4381,264 @@ namespace _21_2_3_
 	{
 		return ProjectionIterator<Iterator, T>(iter, member);
 	}
+}
+
+namespace _21_3_1_1_
+{
+	class Point
+	{
+	public:
+		double x, y;
+		Point():x(0.f),y(0.f){}
+		Point(double ix,double iy) : x(ix),y(iy){}
+	private:
+
+	};
+
+	class Polygon
+	{
+	private:
+		std::vector<Point> points;
+	};
+}
+
+namespace _21_3_1_2_
+{
+	class Point
+	{
+	public:
+		double x, y;
+		Point() :x(0.f), y(0.f) {}
+		Point(double ix, double iy) : x(ix), y(iy) {}
+	private:
+
+	};
+
+	class LabeledPoint : public Point
+	{
+	public:
+		std::string label;
+		LabeledPoint() : Point(),label(""){}
+		LabeledPoint(double x, double y) : Point(x, y), label(""){}
+	};
+
+	template<typename P>
+	class Polygon
+	{
+	public:
+
+	private:
+		std::vector<P> points;
+	};
+
+}
+
+namespace _21_3_1_3_
+{
+	template<typename... Mixins>
+	class Point : public Mixins...
+	{
+	public:
+		double x, y;
+		Point() : Mixins()..., x(0.f), y(0.f){}
+		Point(double ix, double iy) :Mixins()..., x(ix), y(iy){}
+	};
+
+	class Label
+	{
+	public:
+		std::string label;
+		Label():label(""){}
+	};
+
+	class Color
+	{
+	public:
+		unsigned char red = 0, green = 0, blue = 0;
+	};
+
+	using LabelPoint = Point<Label>;
+	using MyPoint = Point<Label, Color>;
+
+	template<typename ... Mixins>
+	class Polygon
+	{
+	public:
+
+	private:
+		std::vector<Point<Mixins...>> points;
+	};
+}
+
+namespace _21_3_1_4_
+{
+	template<template<typename> typename... Mixins>
+	class Point : public Mixins<Point<Mixins...>>...
+	{
+	public:
+		double x, y;
+		Point() :Mixins<Point>()..., x(0.f), y(0.f){}
+		Point(double ix, double iy) :Mixins<Point>()..., x(ix), y(iy){}
+	private:
+
+	};
+
+	template<typename T>
+	class Label
+	{
+	public:
+		std::string label;
+		Label() :label("") {}
+	};
+
+	template<typename T>
+	class Color
+	{
+	public:
+		unsigned char red = 0, green = 0, blue = 0;
+	};
+
+	template<typename ... Mixins>
+	class Polygon
+	{
+	public:
+
+	private:
+		std::vector<Point<Color>> cpoints;
+		std::vector<Point<Label, Color>> clpoints;
+	};
+}
+
+namespace _21_3_2_
+{
+	class NotVirtual {};
+
+	class Virtual
+	{
+	public:
+		virtual void foo()
+		{
+
+		}
+	};
+
+	template<typename... Mixins>
+	class Base : public Mixins...
+	{
+	public:
+		void foo()
+		{
+			std::cout << "Base::foo()" << std::endl;
+		}
+	};
+
+	template<typename... Mixins>
+	class Derived : public Base<Mixins...>
+	{
+	public:
+		void foo()
+		{
+			std::cout << "Derived::foo()" << std::endl;
+		}
+	};
+}
+
+namespace _21_4_
+{
+	template <typename Base, int D>
+	class Discriminator : public Base {
+	};
+
+	template <typename Setter1, typename Setter2,
+		typename Setter3, typename Setter4>
+	class PolicySelector : public Discriminator<Setter1, 1>,
+		public Discriminator<Setter2, 2>,
+		public Discriminator<Setter3, 3>,
+		public Discriminator<Setter4, 4> {
+	};
+
+
+	// default policies
+
+	class DefaultPolicy1 {};
+	class DefaultPolicy2 {};
+	class DefaultPolicy3 {
+	public:
+		static void doPrint() {
+			std::cout << "DefaultPolicy3::doPrint()\n";
+		}
+	};
+	class DefaultPolicy4 {};
+
+
+	// define default policies as P1, P2, P3, P4
+	class DefaultPolicies {
+	public:
+		typedef DefaultPolicy1 P1;
+		typedef DefaultPolicy2 P2;
+		typedef DefaultPolicy3 P3;
+		typedef DefaultPolicy4 P4;
+	};
+
+
+	// class to define a usage of the default policy values
+	// - avoids ambiguities if we derive from DefaultPolicies more than once
+	class DefaultPolicyArgs : virtual public DefaultPolicies {
+	};
+
+
+	// class templates to override the default policy values
+
+	template <typename Policy>
+	class Policy1_is : virtual public DefaultPolicies {
+	public:
+		typedef Policy P1;  // overriding typedef
+	};
+
+	template <typename Policy>
+	class Policy2_is : virtual public DefaultPolicies {
+	public:
+		typedef Policy P2;  // overriding typedef
+	};
+
+	template <typename Policy>
+	class Policy3_is : virtual public DefaultPolicies {
+	public:
+		typedef Policy P3;  // overriding typedef
+	};
+
+	template <typename Policy>
+	class Policy4_is : virtual public DefaultPolicies {
+	public:
+		typedef Policy P4;  // overriding typedef
+	};
+
+
+	// create class template with four policies and default values
+
+	template <typename PolicySetter1 = DefaultPolicyArgs,
+		typename PolicySetter2 = DefaultPolicyArgs,
+		typename PolicySetter3 = DefaultPolicyArgs,
+		typename PolicySetter4 = DefaultPolicyArgs>
+	class BreadSlicer {
+		using Policies = PolicySelector<PolicySetter1, PolicySetter2,
+			PolicySetter3, PolicySetter4>;
+		// use Policies::P1, Policies::P2, //... to refer to the various policies.
+	public:
+		void print() {
+			Policies::P3::doPrint();
+		}
+		//...
+	};
+
+
+	// define a custom policy
+	class CustomPolicy {
+	public:
+		static void doPrint() {
+			std::cout << "CustomPolicy::doPrint()\n";
+		}
+	};
 }
 
 int size = 10;
@@ -5613,6 +6006,19 @@ std::cout << *iva << " " << *ila << std::endl;
 			std::vector<Person> copyPersons;
 
 		}
+
+		{
+			using namespace _21_2_2_1_;
+			FPrint print("第21章 CRTP");
+
+			FTest<int> t;
+			{
+				FTest<int> t1 = t;
+				std::cout << "t1 live(): " << t1.live() << std::endl;
+			}
+			std::cout <<"t1 live(): " << t.live() << std::endl;
+			
+		}
 		{
 			using namespace _21_2_3_;
 			std::vector<Person> authors = {
@@ -5635,6 +6041,37 @@ std::cout << *iva << " " << *ila << std::endl;
 
 			std::cout << "cc = " << cc << std::endl;
 
+		}
+
+		{
+			using namespace _21_3_1_4_;
+
+			FPrint print("第21章 Curious Mixins");
+			Point<Color> ColorPoint{ 4,2 };
+			Point<Color, Label> ColorAndLabelPoint{ 1,3 };
+
+			std::cout <<"ColorPoint : " << ColorPoint.x << " : " << ColorPoint.y << std::endl;
+			std::cout <<"ColorAndLabelPoint : " << ColorAndLabelPoint.x << " : " << ColorAndLabelPoint.y << std::endl;
+		}
+		{
+			using namespace _21_3_2_;
+			FPrint print("第21章 虚拟性的参数化");
+
+			Base<NotVirtual>* p1 = new Base<NotVirtual>;
+			p1->foo();
+
+			Base<Virtual>* p2 = new Derived<Virtual>();
+			p2->foo();
+		}
+
+		{
+			FPrint print("第21章 命名的模板参数");
+			using namespace _21_4_;
+			BreadSlicer<> bc1;
+			bc1.print();
+
+			BreadSlicer<Policy3_is<CustomPolicy> > bc2;
+			bc2.print();
 		}
 	}
 	return 0;
