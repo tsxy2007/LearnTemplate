@@ -14,6 +14,7 @@
 #include <set>
 #include <cstring>
 #include <type_traits>
+#include <functional>
 //#include <utility>
 
 class FPrint
@@ -4641,6 +4642,250 @@ namespace _21_4_
 	};
 }
 
+namespace _22_1_1_
+{
+	template<typename F>
+	void forUpTo(int n, F f)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			f(i);
+		}
+	}
+
+	void printInt(int i)
+	{
+		std::cout << i << ' ';
+	}
+}
+
+namespace _22_1_2_
+{
+	void forUpTo(int n, std::function<void(int)> f)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			f(i);
+		}
+	}
+
+	void printInt(int i)
+	{
+		std::cout << i << ' ';
+	}
+}
+
+namespace _22_1_3_
+{
+	void forUpTo(int n, void(*f)(int))
+	{
+		for (int i = 0; i < n; i++)
+		{
+			f(i);
+		}
+	}
+
+	void printInt(int i)
+	{
+		std::cout << i << ' ';
+	}
+}
+
+namespace _22_2_
+{
+	template<typename T>
+	class IsEqualityComparable
+	{
+	private:
+		static void* conv(bool);
+
+		template<typename U>
+		static std::true_type test(decltype(conv(std::declval<U const&>() == std::declval<U const&>())),
+			decltype(conv(!(std::declval<U const&>() == std::declval<U const&>()))));
+
+		template<typename U>
+		static std::false_type test(...);
+	public:
+		static constexpr bool value = decltype(test<T>(nullptr, nullptr))::value;
+	};
+
+	template<typename T,bool EqComparable = IsEqualityComparable<T>::value>
+	struct TryEquals
+	{
+		static bool equals(T const& x1, T const& x2)
+		{
+			return x1 == x2;
+		}
+	};
+
+	class NotEqualityComparable : public std::exception 
+	{
+	}; 
+	
+	template<typename T> 
+	struct TryEquals<T, false>
+	{
+		static bool equals(T const& x1, T const& x2)
+		{
+			throw NotEqualityComparable();
+		}
+	};
+
+	template<typename R, typename... Args>
+	class FunctionBridge
+	{
+	public:
+		virtual ~FunctionBridge() {}
+		virtual FunctionBridge* clone() const = 0;
+		virtual R invoke(Args... args) const = 0;
+		virtual bool equals(FunctionBridge const* fb) const = 0;
+	private:
+
+	};
+
+	//类型擦除
+	template<typename Functor, typename R, typename... Args>
+	class SpecificFunctorBridge : public FunctionBridge<R, Args...>
+	{
+		Functor functor;
+	public:
+		template<typename FunctorFwd>
+		SpecificFunctorBridge(FunctorFwd&& infunctor)
+			:functor(std::forward<FunctorFwd>(infunctor))
+		{
+
+		}
+
+		virtual SpecificFunctorBridge* clone() const override
+		{
+			return new SpecificFunctorBridge(functor);
+		}
+
+		virtual R invoke(Args ... args) const override
+		{
+			return functor(std::forward< Args >(args)...);
+		}
+
+		virtual bool equals(FunctionBridge<R, Args...> const* fb) const override
+		{
+			if (auto specFb = dynamic_cast<SpecificFunctorBridge const*>(fb))
+			{
+				//return functor == specFb->functor;
+				return TryEquals<Functor>::equals(functor, specFb->functor);
+			}
+			return false;
+		}
+	};
+
+	template <typename Signature>
+	class FunctionPtr;
+
+	template<typename R,typename... Args>
+	class FunctionPtr<R(Args...)>
+	{
+	private:
+		FunctionBridge<R, Args...>* bridge;
+	public:
+		FunctionPtr() : bridge(nullptr)
+		{
+
+		}
+
+		FunctionPtr(FunctionPtr const& other) :bridge(nullptr)
+		{
+			if (other.bridge)
+			{
+				bridge = other.bridge->clone();
+			}
+		}
+
+		FunctionPtr(FunctionPtr&& other) : bridge(other.bridge)
+		{
+			other.bridge = nullptr;
+		}
+
+		// 利用多态类型擦除
+		template<typename F>
+		FunctionPtr(F&& f) : bridge(nullptr)
+		{
+			using Functor = std::decay_t<F>;
+			using Bridge = SpecificFunctorBridge< Functor, R, Args... >;
+			bridge = new Bridge(std::forward<F>(f)); // 生成brige
+		}
+
+		FunctionPtr& operator=(FunctionPtr const& other)
+		{
+			FunctionPtr tmp(other);
+			swap(*this, tmp);
+			return *this;
+		}
+
+		FunctionPtr& operator=(FunctionPtr&& other)
+		{
+			delete bridge;
+			bridge = other.bridge;
+			other.bridge = nullptr;
+			return *this;
+		}
+
+		template<typename F>
+		FunctionPtr& operator=(F&& f)
+		{
+			FunctionPtr tmp(std::forward<F>(f));
+			swap(*this, tmp);
+			return *this;
+		}
+
+		~FunctionPtr()
+		{
+			delete bridge;
+		}
+
+		friend void swap(FunctionPtr& fp1, FunctionPtr& fp2)
+		{
+			std::swap(fp1.bridge, fp2.bridge);
+		}
+
+		explicit operator bool() const
+		{
+			return bridge == nullptr;
+		}
+
+		R operator()(Args... args) const
+		{
+			return bridge->invoke(std::forward<Args>(args)...);
+		}
+
+		friend bool operator==(FunctionPtr const& f1, FunctionPtr const& f2)
+		{
+			if (!(f1) || !(f2))
+			{
+				return !f1&& !f2;
+			}
+			return f1.bridge->equals(f2.bridge);
+		}
+
+		friend bool operator!=(FunctionPtr const& f1, FunctionPtr const& f2)
+		{
+			return !(f1 == f2);
+		}
+	};
+
+
+	void forUpTo(int n, FunctionPtr<void(int)> f)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			f(i);
+		}
+	}
+
+	void printInt(int i)
+	{
+		std::cout << i << ' ';
+	}
+}
+
 int size = 10;
 int main()
 {
@@ -6072,6 +6317,73 @@ std::cout << *iva << " " << *ila << std::endl;
 
 			BreadSlicer<Policy3_is<CustomPolicy> > bc2;
 			bc2.print();
+		}
+	}
+
+
+
+	// 第22章
+	{}
+	{
+		FPrint PrintT("第22章");
+		{
+			FPrint Print("第22章 函数对象");
+			using namespace _22_1_1_;
+			std::vector<int> values;
+
+			forUpTo(5, [&values](int i) {
+				values.push_back(i);
+				});
+
+			forUpTo(5, printInt);
+			std::cout << std::endl;
+		}
+
+		{
+			FPrint Print("第22章 std:function<>");
+			using namespace _22_1_2_;
+			std::vector<int> values;
+
+			forUpTo(5, [&values](int i) {
+				values.push_back(i);
+				});
+
+			forUpTo(5, printInt);
+			std::cout << std::endl;
+		}
+
+		{
+			FPrint Print("第22章 指针");
+			using namespace _22_1_3_;
+			std::vector<int> values{ 1,2,3,4,5 };
+
+			/*auto func = [&values](int i) {
+				values.push_back(i);
+			};
+
+			forUpTo(5, &func); error*/
+
+			forUpTo(5, printInt);
+			std::cout << std::endl;
+		}
+
+		{
+			FPrint Print("第22章 自定义Function");
+			using namespace _22_2_;
+			std::vector<int> values{ 1,2,3,4,5 };
+
+			auto func = [&values](int i) {
+				values.push_back(i);
+			};
+
+			forUpTo(5, func);
+
+			FunctionPtr<void(int)> f1 = func;
+			FunctionPtr<void(int)> f2 = func;
+			std::cout << "f1 == f2 " << (f1==f2) << std::endl;
+
+			forUpTo(5, printInt);
+			std::cout << std::endl;
 		}
 	}
 	return 0;
