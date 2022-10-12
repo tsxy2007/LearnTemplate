@@ -4727,7 +4727,8 @@ namespace _22_2_
 	{
 		static bool equals(T const& x1, T const& x2)
 		{
-			throw NotEqualityComparable();
+			return false;
+			//throw NotEqualityComparable();
 		}
 	};
 
@@ -4858,9 +4859,9 @@ namespace _22_2_
 
 		friend bool operator==(FunctionPtr const& f1, FunctionPtr const& f2)
 		{
-			if (!(f1) || !(f2))
+			if (!(&f1) || !(&f2))
 			{
-				return !f1&& !f2;
+				return !(&f1) && !( & f2);
 			}
 			return f1.bridge->equals(f2.bridge);
 		}
@@ -6370,7 +6371,7 @@ std::cout << *iva << " " << *ila << std::endl;
 		{
 			FPrint Print("第22章 自定义Function");
 			using namespace _22_2_;
-			std::vector<int> values{ 1,2,3,4,5 };
+			std::vector<int> values;
 
 			auto func = [&values](int i) {
 				values.push_back(i);
