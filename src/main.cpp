@@ -4887,6 +4887,208 @@ namespace _22_2_
 	}
 }
 
+namespace _23_1_1_
+{
+	template <typename T>
+	constexpr T sqrt(T x)
+	{
+		if (x <= 1)
+		{
+			return x;
+		}
+		T lo = 0, hi = x;
+		for (;;)
+		{
+			auto mid = (hi + lo) / 2, midSquared = mid * mid;
+			if (lo + 1 >= hi || midSquared == x)
+			{
+				return mid;
+			}
+			if (midSquared < x)
+			{
+				lo = mid;
+			}
+			else
+			{
+				hi = mid;
+			}
+		}
+	}
+}
+
+namespace _23_1_2_
+{
+	template<typename T>
+	struct RemoveAllExtentsT
+	{
+		using Type = T;
+	};
+
+	template<typename T,std::size_t SZ>
+	struct RemoveAllExtentsT<T[SZ]>
+	{
+		using Type = typename RemoveAllExtentsT<T>::Type;
+	};
+
+	template<typename T>
+	struct RemoveAllExtentsT<T[]>
+	{
+		using Type = typename RemoveAllExtentsT<T>::Type;
+	};
+
+	template<typename T>
+	using RemoveAllExtents = typename RemoveAllExtentsT<T>::Type;
+}
+
+namespace _23_1_3_1_
+{
+	template<typename T, std::size_t N>
+	auto dotProduct(std::array<T, N> const& x, std::array<T, N> const& y)
+	{
+		T result{};
+		for (size_t i = 0; i < N; i++)
+		{
+			result += x[i] * y[i];
+		}
+		return result;
+	}
+}
+
+namespace _23_1_3_2_
+{
+	template<typename T, std::size_t N>
+	struct DotProductT
+	{
+		static inline T result(auto&& a, auto&& b)
+		{
+			return (*a) * (*b) + DotProductT<T, N - 1>::result(a + 1, b + 1);
+		}
+	};
+
+	template<typename T>
+	struct DotProductT<T,0>
+	{
+		static inline T result(auto&& a, auto&& b)
+		{
+			return T{};
+		}
+	};
+
+	template<typename T, std::size_t N>
+	auto dotProduct(std::array<T, N> const& x, std::array<T, N> const& y)
+	{
+		return DotProductT<T, N>::result(x.begin(), y.begin());
+	}
+}
+
+namespace _23_1_4_
+{
+	template<unsigned N,unsigned D = 1>
+	struct Ratio
+	{
+		static constexpr unsigned num = N;
+		static constexpr unsigned den = D;
+		using Type = Ratio<num, den>;
+	};
+
+	template<typename R1,typename R2>
+	struct RatioAddImpl
+	{
+	private:
+		static constexpr unsigned den = R1::den * R2::den;
+		static constexpr unsigned num = R1::num * R2::den + R2::num * R1::den;
+	public:
+		typedef Ratio<num, den> Type;
+	};
+
+	template<typename R1,typename R2>
+	using RatioAdd = typename RatioAddImpl<R1, R2>::Type;
+
+	using TIME_MS = Ratio<1, 1000>;
+	using TIME_S = Ratio<1, 1>;
+	using TIME_MIN = Ratio<1, 60>;
+	using TIME_HOUR = Ratio<1, 3600>;
+
+	template<typename T,typename U = Ratio<1>>
+	class Duration
+	{
+	public:
+		using ValueType = T;
+		using UnitType = typename U::Type;
+	private:
+		ValueType  val;
+	public:
+		constexpr Duration(ValueType v = 0) : val(v)
+		{
+
+		}
+
+		constexpr ValueType value() const
+		{
+			return val;
+		}
+	};
+
+	template<typename T1,typename U1,typename T2,typename U2>
+	auto constexpr operator+(Duration<T1, U1>const& lhs, Duration<T2, U2>const& Rhs)
+	{
+		using VT = Ratio<1, RatioAdd<U1, U2>::den>;
+		auto val = lhs.value() * VT::den / U1::den * U1::num + Rhs.value() * VT::den / U2::den * U2::num;
+		return Duration<decltype(val), VT>(val);
+	}
+}
+
+namespace _23_2_
+{
+	template<long long N, long long LO = 1, long long HI = N>
+	struct Sqrt
+	{
+		static constexpr auto mid = (LO + HI + 1) / 2;
+		static constexpr auto value = (N < mid* mid) ? Sqrt<N, LO, mid - 1>::value : Sqrt<N, mid, HI>::value;
+	};
+
+	template<long long N, long long M>
+	struct Sqrt<N,M,M>
+	{
+		static constexpr auto value = M;
+	};
+}
+
+namespace _23_3_1_
+{
+	template<long long N,long long LO = 1,long long HI = N>
+	struct Sqrt
+	{
+		static constexpr auto mid = (LO + HI + 1) / 2;
+		using SubT = _19_7_1_::IfThenElse<(N < mid* mid), Sqrt<N, LO, mid - 1>, Sqrt<N, mid, HI> >;
+		static constexpr auto value = SubT::value;
+	};
+
+	template<long long N,long long S>
+	struct Sqrt<N,S,S>
+	{
+		static constexpr auto value = S;
+	};
+}
+
+namespace _23_4_
+{
+	template<int M ,int N>
+	struct PowM
+	{
+		static int const value = M * PowM<M, N-1>::value;
+	};
+
+	template<int M>
+	struct PowM<M,0>
+	{
+		static int const value = 1;
+	};
+
+	template<int M,int N>
+	constexpr int Pow = PowM<M, N>::value;
+}
+
 int size = 10;
 int main()
 {
@@ -6385,6 +6587,67 @@ std::cout << *iva << " " << *ila << std::endl;
 
 			forUpTo(5, printInt);
 			std::cout << std::endl;
+		}
+	}
+
+	// 第23章
+	{}
+	{
+		FPrint printt("第23章");
+		{
+			FPrint print("值元编程");
+			std::cout << _23_1_1_::sqrt(17) << std::endl;
+		}
+		{
+			FPrint print("类型元编程");
+			using namespace _23_1_2_;
+			std::cout << typeid(RemoveAllExtents<int[]>).name() << std::endl;
+			std::cout << typeid(RemoveAllExtents<int[5][10]>).name() << std::endl;
+			std::cout << typeid(RemoveAllExtents<int[][10]>).name() << std::endl;
+			std::cout << typeid(RemoveAllExtents<int(*)[]>).name() << std::endl;
+		}
+		{
+			FPrint print("混合元编程 _23_1_3_1_");
+			std::array<int,4> ia{ 1,2,3,4 };
+			std::array<int, 4> ib{ 10,10,10,10 };
+			std::cout << "_23_1_3_1_ ia dot ib = " << _23_1_3_1_::dotProduct(ia, ib) << std::endl;
+		}
+		{
+			FPrint print("混合元编程 _23_1_3_2_");
+			std::array<int, 4> ia{ 1,2,3,4 };
+			std::array<int, 4> ib{ 10,10,10,10 };
+			int result = _23_1_3_2_::dotProduct(ia, ib);
+			std::cout << "_23_1_3_2_ ia dot ib = " << result << std::endl;
+		}
+		{
+			FPrint print("将混合元编程用于“单位类型” _23_1_4_");
+			using namespace _23_1_4_;
+
+			int x = 1;
+			int y = 10;
+			auto a = Duration<int, Ratio<1, 1000>>(x);
+			auto b = Duration<int, Ratio<1, 60000>>(y);
+			auto c = a + b;
+			std::cout << "c = " << c.value() << std::endl; 
+
+		}
+		{
+			FPrint print("反射元编程的维度 _23_2_");
+			using namespace _23_2_;
+			std::cout << Sqrt<100>::value << std::endl;
+		}
+
+		{
+			FPrint print("追踪所有的实例化过程 _23_3_");
+			using namespace _23_3_1_;
+			std::cout << Sqrt<100>::value << std::endl;
+		}
+		{
+			FPrint print("枚举值还是静态常量 _23_6_");
+			using namespace _23_4_;
+			std::cout << PowM<2,3>::value << std::endl;
+			std::cout << Pow<3,3> << std::endl;
+			std::cout << Pow<3,3> << std::endl;
 		}
 	}
 	return 0;
