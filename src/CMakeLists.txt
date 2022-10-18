@@ -1,2 +1,2 @@
 
-add_executable(learntemplate "main.cpp")
+add_executable(learntemplate "main.cpp" "head.h")
