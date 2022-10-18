@@ -5338,7 +5338,7 @@ namespace _24_
 	class AccumulateT;
 
 	template<typename List,template<typename X,typename Y> typename TypeFun,typename I>
-	class AccumulateT<List, TypeFun,I,false> : public AccumulateT<FrontPop<List>,TypeFun,typename TypeFunc<I,Front<List>>::Type>
+	class AccumulateT<List, TypeFun,I,false> : public AccumulateT<FrontPop<List>,TypeFun,typename TypeFun<I,Front<List>>::Type>
 	{};
 
 	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
@@ -5350,4 +5350,20 @@ namespace _24_
 
 	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
 	using Accumulate = typename AccumulateT<List, TypeFun, I>::Type;
+
+	// 新的找寻最大值
+	template<typename T,typename U>
+	class LargestTypeT_New : public _19_7_1_::ifThenElseT<sizeof(T) >= sizeof(U), T, U>
+	{
+
+	};
+
+	template<typename TypeList>
+	class LargestTypeAccT : public AccumulateT<FrontPop<TypeList>, LargestTypeT_New, Font<TypeList>>
+	{
+
+	};
+
+	template<typename Typelist>
+	using LargestTypeAcc = typename LargestTypeAccT<Typelist>::Type;
 }

@@ -1582,6 +1582,8 @@ std::cout << *iva << " " << *ila << std::endl;
 		using PushBack_OldType2 = _24_::PushBack_Old<NullType, bool>;
 		using ReverseType = _24_::Reverse<TestType>;
 		using TranformType = _24_::Transform<TestType>;
+		using ResultType = _24_::Accumulate<TestType, _24_::FrontPushT, NullType>;
+		using LargestType_New = _24_::LargestTypeAcc<TestType>;
 		std::cout << "原始：" << typeid(TestType).name() << std::endl;
 		std::cout << "添加：" << typeid(TestType1).name() << std::endl;
 		std::cout << "取第4个元素的类型：" << typeid(TestType2).name() << std::endl;
@@ -1591,6 +1593,8 @@ std::cout << *iva << " " << *ila << std::endl;
 		std::cout << typeid(PushBack_OldType2).name() << std::endl;
 		std::cout << typeid(ReverseType).name() << std::endl;
 		std::cout <<" TranformType = " << typeid(TranformType).name() << std::endl;
+		std::cout <<" ResultType = " << typeid(ResultType).name() << std::endl;
+		std::cout << "最大类型的大小_New：" << sizeof(LargestType_New) << std::endl;
 		int i = 0;
 
 	}
