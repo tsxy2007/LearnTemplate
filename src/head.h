@@ -5358,12 +5358,19 @@ namespace _24_
 
 	};
 
-	template<typename TypeList>
-	class LargestTypeAccT : public AccumulateT<FrontPop<TypeList>, LargestTypeT_New, Font<TypeList>>
+	template<typename List, bool = IsEmpty<List>::value>
+	class LargestTypeAccT;
+
+	template<typename List>
+	class LargestTypeAccT<List,false> : public AccumulateT<FrontPop<List>, LargestTypeT_New, Front<List>>
 	{
 
 	};
 
-	template<typename Typelist>
-	using LargestTypeAcc = typename LargestTypeAccT<Typelist>::Type;
+	template<typename List>
+	class LargestTypeAccT<List, true>
+	{ };
+
+	template<typename List>
+	using LargestTypeAcc = typename LargestTypeAccT<List>::Type;
 }
