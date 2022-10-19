@@ -1530,7 +1530,7 @@ std::cout << *iva << " " << *ila << std::endl;
 			std::array<int, 4> ia{ 1,2,3,4 };
 			std::array<int, 4> ib{ 10,10,10,10 };
 			// 一下代码vs2019报错
-#if HAS_CPP_14
+#if 0
 			std::cout << "vs2019 編譯器bug" << std::endl;
 #else
 			int result1 = _23_1_3_2_::dotProduct(ia, ib);
