@@ -1572,7 +1572,7 @@ std::cout << *iva << " " << *ila << std::endl;
 	}
 	{
 		FPrint printT("第24章 TypeList");
-		using TestType = _24_::TypeList<signed char, short, int, long, long long>;
+		using TestType = _24_::TypeList<short, int, long, signed char, long long>;
 		using TestType1 = _24_::FrontPush<_24_::FrontPop<TestType>,bool>;
 		using TestType2 = _24_::NthElement<TestType1, 4>; 
 		using LargestType = _24_::LargestType<TestType>;
@@ -1584,6 +1584,14 @@ std::cout << *iva << " " << *ila << std::endl;
 		using TranformType = _24_::Transform<TestType>;
 		using ResultType = _24_::Accumulate<TestType, _24_::FrontPushT, NullType>;
 		using LargestType_New = _24_::LargestTypeAcc<TestType>;
+		using ST = _24_::InsertionSort<TestType, _24_::SmallerThanT>;
+		int ResultPrimes = _24_::Accumulate<_24_3_1_::Primes, _24_3_1_::MultiplyT, _24_3_1_::CTValue<int, 1>>::value;
+		int ResultCTPrimes = _24_::Accumulate<_24_3_1_::CTPrimes, _24_3_1_::MultiplyT, _24_3_1_::CTValue<int, 1>>::value;
+		using Integers = _24_::Valuelist<int, 6, 2, 4, 9, 5, 2, 1, 7>;
+		using SortedIntegers = _24_::InsertionSort<Integers, _24_::GreaterThanT>;
+		int ResultCTPrimess = _24_::Accumulate<_24_::Primes, _24_::MultiplyT, _24_::CTValue<int, 1>>::value;
+		using SelectType = _24_::Select<TestType, 1, 3, 4>;
+		using SortedTypes = _24_::InsertionSort<_24_::SignedIntegralTypes, _24_::BiggerThanT>;
 		std::cout << "原始：" << typeid(TestType).name() << std::endl;
 		std::cout << "添加：" << typeid(TestType1).name() << std::endl;
 		std::cout << "取第4个元素的类型：" << typeid(TestType2).name() << std::endl;
@@ -1595,6 +1603,13 @@ std::cout << *iva << " " << *ila << std::endl;
 		std::cout <<" TranformType = " << typeid(TranformType).name() << std::endl;
 		std::cout <<" ResultType = " << typeid(ResultType).name() << std::endl;
 		std::cout << "最大类型的大小_New：" << sizeof(LargestType_New) << std::endl;
+		std::cout << "ST：" << typeid(ST).name() << std::endl;
+		std::cout << "ResultPrimes = " << ResultPrimes << std::endl;
+		std::cout << "ResultCTPrimes = " << ResultCTPrimes << std::endl;
+		std::cout << "SortedIntegers：" << typeid(SortedIntegers).name() << std::endl; 
+		std::cout << "ResultCTPrimess = " << ResultCTPrimess << std::endl;
+		std::cout << "SelectType：" << typeid(SelectType).name() << std::endl;
+		std::cout << "SortedTypes：" << typeid(SortedTypes).name() << std::endl;
 		int i = 0;
 
 	}

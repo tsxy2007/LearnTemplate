@@ -5316,12 +5316,21 @@ namespace _24_
 
 	template<typename List,template<typename T> typename MetaFun,bool = IsEmpty<List>::value>
 	class TransformT;
-
-	template<typename List,template<typename T> typename MetaFun>
-	class TransformT<List, MetaFun, false> : public FrontPushT<typename TransformT<FrontPop<List>,MetaFun>::Type,typename MetaFun<Front<List>>::Type>
+#if 0
+	template<typename List, template<typename T> typename MetaFun>
+	class TransformT<List, MetaFun, false> : public FrontPushT<typename TransformT<FrontPop<List>, MetaFun>::Type, typename MetaFun<Front<List>>::Type>
 	{
 
 	};
+#else
+	template<typename... Elements, template<typename T> typename MetaFun>
+	class TransformT<TypeList<Elements...>,MetaFun,false>
+	{
+	public:
+		using Type = TypeList<typename MetaFun<Elements>::Type...>;
+	};
+#endif // 0
+
 
 	template<typename List, template<typename T> typename MetaFun>
 	class TransformT<List, MetaFun, true>
@@ -5334,11 +5343,11 @@ namespace _24_
 	using Transform = typename TransformT<List, MetaFun>::Type;
 
 	// 类型列表的累加
-	template<typename List,template<typename X,typename Y> typename TypeFun,typename I,bool = IsEmpty<List>::value>
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I, bool = IsEmpty<List>::value>
 	class AccumulateT;
 
-	template<typename List,template<typename X,typename Y> typename TypeFun,typename I>
-	class AccumulateT<List, TypeFun,I,false> : public AccumulateT<FrontPop<List>,TypeFun,typename TypeFun<I,Front<List>>::Type>
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
+	class AccumulateT<List, TypeFun, I, false> : public AccumulateT<FrontPop<List>, TypeFun, typename TypeFun<I, Front<List>>::Type>
 	{};
 
 	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
@@ -5352,7 +5361,7 @@ namespace _24_
 	using Accumulate = typename AccumulateT<List, TypeFun, I>::Type;
 
 	// 新的找寻最大值
-	template<typename T,typename U>
+	template<typename T, typename U>
 	class LargestTypeT_New : public _19_7_1_::ifThenElseT<sizeof(T) >= sizeof(U), T, U>
 	{
 
@@ -5362,7 +5371,7 @@ namespace _24_
 	class LargestTypeAccT;
 
 	template<typename List>
-	class LargestTypeAccT<List,false> : public AccumulateT<FrontPop<List>, LargestTypeT_New, Front<List>>
+	class LargestTypeAccT<List, false> : public AccumulateT<FrontPop<List>, LargestTypeT_New, Front<List>>
 	{
 
 	};
@@ -5373,4 +5382,215 @@ namespace _24_
 
 	template<typename List>
 	using LargestTypeAcc = typename LargestTypeAccT<List>::Type;
+
+	// 插入排序
+	template<typename List, template<typename T, typename U> typename Compare, bool = IsEmpty<List>::value>
+	class InsertionSortT;
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	using InsertionSort = typename InsertionSortT<List, Compare>::Type;
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare, bool = IsEmpty<List>::value>
+	class InsertSortedT;
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	using InsertSorted = typename InsertSortedT<List, Element, Compare>::Type;
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	class InsertionSortT<List, Compare, false>
+		: public InsertSortedT<InsertionSort<FrontPop<List>, Compare>, Front<List>, Compare>
+	{
+
+	};
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	class InsertionSortT<List, Compare, true>
+	{
+	public:
+		using Type = List;
+	};
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	class InsertSortedT<List, Element, Compare, false>
+	{
+		using NewTail = typename _19_7_1_::IfThenElse<Compare<Element, Front<List>>::value,
+			_19_7_1_::IdentityT<List>, InsertSortedT<FrontPop<List>, Element, Compare>>::Type;
+
+		using NewHead = _19_7_1_::IfThenElse<Compare<Element, Front<List>>::value, Element, Front<List>>;
+	public:
+		using Type = FrontPush<NewTail, NewHead>;
+	};
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	class InsertSortedT<List, Element, Compare, true> : public FrontPushT<List, Element>
+	{};
+
+	template<typename T, typename U>
+	struct SmallerThanT
+	{
+		static constexpr bool value = sizeof(T) < sizeof(U);
+	};
+
+	template<typename T, typename U>
+	struct BiggerThanT
+	{
+		static constexpr bool value = sizeof(T) > sizeof(U);
+	};
+
+
+	template<typename T, T Value>
+	struct CTValue
+	{
+		static constexpr T value = Value;
+	};
+
+
+	template<typename T, T...Values>
+	struct Valuelist
+	{
+
+	};
+
+	template<typename T, T... Values>
+	struct IsEmpty< Valuelist <T, Values...> >
+	{
+		static constexpr bool value = sizeof...(Values) == 0;
+	};
+
+	template<typename T, T Head, T... Tail>
+	struct FrontT<Valuelist<T, Head, Tail...>>
+	{
+		using Type = CTValue<T, Head>;
+		static constexpr T value = Head;
+	};
+
+	template<typename T,T Head,T... Tail>
+	struct FrontPopT<Valuelist<T,Head,Tail...>>
+	{
+		using Type = Valuelist<T, Tail...>;
+	};
+
+	template<typename T,T... Values,T New>
+	struct FrontPushT<Valuelist<T,Values...>,CTValue<T,New>>
+	{
+		using Type = Valuelist<T, New, Values...>;
+	};
+
+	template<typename T,T... Values,T New>
+	struct PushBackT<Valuelist<T,Values...>,CTValue<T,New>>
+	{
+		using Type = Valuelist<T, Values..., New>;
+	};
+
+	template<typename T,typename U>
+	struct GreaterThanT;
+
+	template<typename T, T First,T Second>
+	struct GreaterThanT<CTValue<T,First>,CTValue<T, Second>>
+	{
+		static constexpr bool value = First > Second;
+	};
+
+	template<typename T, typename U>
+	struct MultiplyT;
+
+	template<typename T, T Value1, T Value2>
+	struct MultiplyT<CTValue<T, Value1>, CTValue<T, Value2>>
+	{
+	public:
+		using Type = CTValue<T, Value1* Value2>;
+	};
+
+	template<typename T, typename U>
+	using Multiply = typename MultiplyT<T, U>::Type;
+
+	// 选取几个元素组成新的。
+	template<typename Types, typename Indices>
+	class SelectT;
+
+	template<typename Types, unsigned... Indices>
+	class SelectT<Types, Valuelist<unsigned, Indices...>>
+	{
+	public:
+		using Type = TypeList<NthElement<Types, Indices>...>;
+	};
+
+	template<typename Types, unsigned... Indices>
+	using Select = typename SelectT<Types, Valuelist<unsigned,Indices...>>::Type;
+
+	using Primes = Valuelist<int, 2, 3, 5, 7, 11>;
+
+	// cons-style TypeList
+	class Nil
+	{
+	};
+
+	 template<typename HeadT,typename TailT = Nil>
+	 class Cons
+	 {
+	 public:
+		 using Head = HeadT;
+		 using Tail = TailT;
+	 };
+
+	 using SignedIntegralTypes = Cons<signed char, Cons<short, Cons<int,
+		 Cons<long, Cons<long long, Nil>>>>>;
+
+	 template<typename List>
+	 class FrontT
+	 {
+	 public:
+		 using Type = typename List::Head;
+	 };
+
+	 template<typename List,typename Element>
+	 class FrontPushT
+	 {
+	 public:
+		 using Type = Cons<Element, List>;
+	 };
+
+	 template<typename List>
+	 class FrontPopT
+	 {
+	 public:
+		 using Type = typename List::Tail;
+	 };
+
+	 template<>
+	 struct IsEmpty<Nil> 
+	 {
+		 static constexpr bool value = true;
+	 };
+}
+namespace _24_3_1_
+{
+	template<typename T,T Value>
+	struct CTValue
+	{
+		static constexpr T value = Value;
+	};
+
+	using Primes = _24_::TypeList<CTValue<int, 2>, CTValue<int, 3>,
+		CTValue<int, 5>, CTValue<int, 7>,
+		CTValue<int, 11>>;
+
+	template<typename T,typename U>
+	struct MultiplyT;
+	
+	template<typename T, T Value1, T Value2>
+	struct MultiplyT<CTValue<T,Value1>, CTValue<T, Value2>>
+	{
+	public:
+		using Type = CTValue<T, Value1* Value2>;
+	};
+
+	template<typename T, typename U>
+	using Multiply = typename MultiplyT<T, U>::Type;
+
+	template<typename T, T... Values>
+	using CTTypeList = _24_::TypeList<CTValue<T, Values>...>;
+
+	using CTPrimes = CTTypeList<int, 2, 3, 5, 7, 11>;
+
 }
