@@ -5243,7 +5243,7 @@ namespace _24_
 	};
 
 	template<typename List>
-	using LargestType = typename LargestTypeT_old<List>::Type;
+	using LargestType = typename LargestTypeT<List>::Type;
 
 	template<typename List,typename NewElement>
 	class PushBackT_Old;

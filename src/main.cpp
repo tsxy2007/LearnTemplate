@@ -1570,11 +1570,12 @@ std::cout << *iva << " " << *ila << std::endl;
 		}
 
 	}
+	// 第24章
 	{
 		FPrint printT("第24章 TypeList");
 		using TestType = _24_::TypeList<short, int, long, signed char, long long>;
 		using TestType1 = _24_::FrontPush<_24_::FrontPop<TestType>,bool>;
-		using TestType2 = _24_::NthElement<TestType1, 4>; 
+		using TestType2 = _24_::NthElement<TestType, 2>;
 		using LargestType = _24_::LargestType<TestType>;
 		using PushBack_OldType = _24_::PushBack_Old<TestType, bool>;
 		using PushBackType = _24_::PushBack<TestType, bool>;
@@ -1594,7 +1595,7 @@ std::cout << *iva << " " << *ila << std::endl;
 		using SortedTypes = _24_::InsertionSort<_24_::SignedIntegralTypes, _24_::BiggerThanT>;
 		std::cout << "原始：" << typeid(TestType).name() << std::endl;
 		std::cout << "添加：" << typeid(TestType1).name() << std::endl;
-		std::cout << "取第4个元素的类型：" << typeid(TestType2).name() << std::endl;
+		std::cout << "取第2个元素的类型：" << typeid(TestType2).name() << std::endl;
 		std::cout <<"最大类型的大小："<< sizeof(LargestType) << std::endl;
 		std::cout << typeid(PushBack_OldType).name() << std::endl;
 		std::cout << typeid(PushBackType).name() << std::endl;
