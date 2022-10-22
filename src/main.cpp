@@ -1614,5 +1614,54 @@ std::cout << *iva << " " << *ila << std::endl;
 		int i = 0;
 
 	}
+	//ตฺ25ีย
+	{
+		FPrint print("Tuple");
+		using namespace _25_;
+		auto tuple = _25_::makeTuple(1, 2.5f, "hello world");
+		auto tuple1(tuple);
+		auto tuple3 = _25_::makeTuple(2, 3.5, "nihao");
+		_25_::Tuple<> tuple4;
+		bool bResult = tuple == tuple1;
+		bool bResult1 = tuple == tuple3;
+		using T2 = _25_::FrontPop<_25_::PushBack<decltype(tuple), bool>>;
+		T2 tuple5(3.14f, "nihao tuple", false);
+
+		auto Tuple6 = _25_::pushFront(tuple, 10);
+		auto Tuple7 = _25_::pushBack(tuple, 10);
+
+		_25_::Tuple<int,double,std::string> tuple8(17, 3.14f, "hello world!");
+		auto ReverseTuple = _25_::reverse(Tuple7);
+		auto popbackTuple = _25_::popBack(ReverseTuple);
+		auto copycountertest = []() 
+		{
+			_25_::Tuple<CopyCounter<0>, CopyCounter<1>, CopyCounter<2>, CopyCounter<3>,
+				CopyCounter<4>> copies;
+			auto reversed = reverse(copies);
+			std::cout << "0: " << CopyCounter<0>::numCopies << " copies\n";
+			std::cout << "1: " << CopyCounter<1>::numCopies << " copies\n";
+			std::cout << "2: " << CopyCounter<2>::numCopies << " copies\n";
+			std::cout << "3: " << CopyCounter<3>::numCopies << " copies\n";
+			std::cout << "4: " << CopyCounter<4>::numCopies << " copies\n";
+		};
+		
+		auto ReverseTuple2 = _25_::reverseN(Tuple7);
+		using List = _25_::MakeIndexList<3>;
+		List l;
+		std::cout << _25_::get<0>(tuple) << "; " << _25_::get<1>(tuple) << "; " << _25_::get<2>(tuple) << std::endl;
+		std::cout << _25_::get<0>(tuple1) << "; " << _25_::get<1>(tuple1) << "; " << _25_::get<2>(tuple1) << std::endl;
+		std::cout << "(tuple == tuple1) = " << bResult << "(tuple == tuple3) = " << bResult1 << std::endl;
+		std::cout << tuple << std::endl;
+		std::cout << tuple4 << std::endl;
+		std::cout << tuple5 << std::endl;
+		std::cout << Tuple6 << std::endl;
+		std::cout << Tuple7 << std::endl;
+		std::cout << tuple8 << std::endl;
+		std::cout <<"ReverseTuple" << ReverseTuple << std::endl;
+		std::cout <<"ReverseTuple2" << ReverseTuple2 << std::endl;
+		std::cout << popbackTuple << std::endl;
+
+		copycountertest();
+	}
 	return 0;
 }
