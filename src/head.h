@@ -6299,4 +6299,73 @@ namespace _25_
 	{
 		return reverseImpl(t, Reverse<MakeIndexList<sizeof...(Elements)>>());
 	}
+
+	// 洗牌和选择
+
+	template<typename... Elements,unsigned... Indices>
+	auto select(Tuple<Elements...> const& t, Valuelist<unsigned, Indices...>)
+	{
+		return makeTuple(get<Indices>(t)...);
+	}
+
+	template<unsigned I,unsigned N,typename IndexList = Valuelist<unsigned>>
+	class ReplicatedIndexListT;
+
+	template<unsigned I,unsigned N,unsigned... Indices>
+	class ReplicatedIndexListT<I,N,Valuelist<unsigned,Indices...>>
+		:public ReplicatedIndexListT<I,N-1,Valuelist<unsigned,Indices...,I>>
+	{};
+
+	template<unsigned I,unsigned... Indices>
+	class ReplicatedIndexListT<I, 0, Valuelist<unsigned, Indices...> >
+	{
+	public:
+		using Type = Valuelist<unsigned, Indices...>;
+	};
+
+	template<unsigned I,unsigned N>
+	using ReplicatedIndexList = typename ReplicatedIndexListT<I, N>::Type;
+
+	template<unsigned I,unsigned N,typename... Elements>
+	auto splat(Tuple<Elements...> const& t)
+	{
+		return select(t, ReplicatedIndexList<I, N>());
+	}
+
+	template<typename List,template<typename T,typename U> typename Func>
+	class MetafunOfNthElementT
+	{
+	public:
+		template<typename T, typename U>
+		class Apply;
+
+		template<unsigned N,unsigned M>
+		class Apply<CTValue<unsigned ,M>, CTValue<unsigned, N>> :
+			public Func<NthElement<List,M>,NthElement<List,N>>
+		{
+		};
+	};
+
+	template<template<typename T, typename U> typename Compare,typename... Elements>
+	auto sort(Tuple<Elements...> const& t)
+	{
+		return select(t,
+			InsertionSort<MakeIndexList<sizeof...(Elements)>,
+			MetafunOfNthElementT<Tuple<Elements...>,
+			Compare>::template Apply>());
+	}
+	// 元组的展开
+	template<typename F,typename ... Elements,unsigned...Indices>
+	auto applyImpl(F f, Tuple<Elements...> const& t,
+		Valuelist<unsigned, Indices...>)->decltype(f(get<Indices>(t)...))
+	{
+		return f(get<Indices>(t)...);
+	}
+
+	template<typename F,typename... Elements,unsigned N = sizeof...(Elements)>
+	auto apply(F f, Tuple<Elements...> const& t)->decltype(applyImpl(f, t, MakeIndexList<N>()))
+	{
+		return applyImpl(f, t, MakeIndexList<N>());
+	}
+
 }

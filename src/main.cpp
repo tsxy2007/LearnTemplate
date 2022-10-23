@@ -1647,7 +1647,10 @@ std::cout << *iva << " " << *ila << std::endl;
 		
 		auto ReverseTuple2 = _25_::reverseN(Tuple7);
 		using List = _25_::MakeIndexList<3>;
-		List l;
+		auto SelectList = _25_::splat<2,4>(ReverseTuple2);
+		auto sortList = _25_::sort<_25_::SmallerThanT>(ReverseTuple2);
+	
+		Tuple<std::string,std::string,int, std::string> t("pi", "is roughy", 3, "\n");
 		std::cout << _25_::get<0>(tuple) << "; " << _25_::get<1>(tuple) << "; " << _25_::get<2>(tuple) << std::endl;
 		std::cout << _25_::get<0>(tuple1) << "; " << _25_::get<1>(tuple1) << "; " << _25_::get<2>(tuple1) << std::endl;
 		std::cout << "(tuple == tuple1) = " << bResult << "(tuple == tuple3) = " << bResult1 << std::endl;
@@ -1657,11 +1660,14 @@ std::cout << *iva << " " << *ila << std::endl;
 		std::cout << Tuple6 << std::endl;
 		std::cout << Tuple7 << std::endl;
 		std::cout << tuple8 << std::endl;
+		copycountertest();
 		std::cout <<"ReverseTuple" << ReverseTuple << std::endl;
 		std::cout <<"ReverseTuple2" << ReverseTuple2 << std::endl;
 		std::cout << popbackTuple << std::endl;
+		std::cout << "SelectList: " << SelectList << std::endl;
+		std::cout << "sortList: " << sortList << std::endl;
 
-		copycountertest();
+		
 	}
 	return 0;
 }
