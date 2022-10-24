@@ -1616,58 +1616,147 @@ std::cout << *iva << " " << *ila << std::endl;
 	}
 	//ตฺ25ีย
 	{
-		FPrint print("Tuple");
-		using namespace _25_;
-		auto tuple = _25_::makeTuple(1, 2.5f, "hello world");
-		auto tuple1(tuple);
-		auto tuple3 = _25_::makeTuple(2, 3.5, "nihao");
-		_25_::Tuple<> tuple4;
-		bool bResult = tuple == tuple1;
-		bool bResult1 = tuple == tuple3;
-		using T2 = _25_::FrontPop<_25_::PushBack<decltype(tuple), bool>>;
-		T2 tuple5(3.14f, "nihao tuple", false);
-
-		auto Tuple6 = _25_::pushFront(tuple, 10);
-		auto Tuple7 = _25_::pushBack(tuple, 10);
-
-		_25_::Tuple<int,double,std::string> tuple8(17, 3.14f, "hello world!");
-		auto ReverseTuple = _25_::reverse(Tuple7);
-		auto popbackTuple = _25_::popBack(ReverseTuple);
-		auto copycountertest = []() 
 		{
-			_25_::Tuple<CopyCounter<0>, CopyCounter<1>, CopyCounter<2>, CopyCounter<3>,
-				CopyCounter<4>> copies;
-			auto reversed = reverse(copies);
-			std::cout << "0: " << CopyCounter<0>::numCopies << " copies\n";
-			std::cout << "1: " << CopyCounter<1>::numCopies << " copies\n";
-			std::cout << "2: " << CopyCounter<2>::numCopies << " copies\n";
-			std::cout << "3: " << CopyCounter<3>::numCopies << " copies\n";
-			std::cout << "4: " << CopyCounter<4>::numCopies << " copies\n";
-		};
-		
-		auto ReverseTuple2 = _25_::reverseN(Tuple7);
-		using List = _25_::MakeIndexList<3>;
-		auto SelectList = _25_::splat<2,4>(ReverseTuple2);
-		auto sortList = _25_::sort<_25_::SmallerThanT>(ReverseTuple2);
-	
-		Tuple<std::string,std::string,int, std::string> t("pi", "is roughy", 3, "\n");
-		std::cout << _25_::get<0>(tuple) << "; " << _25_::get<1>(tuple) << "; " << _25_::get<2>(tuple) << std::endl;
-		std::cout << _25_::get<0>(tuple1) << "; " << _25_::get<1>(tuple1) << "; " << _25_::get<2>(tuple1) << std::endl;
-		std::cout << "(tuple == tuple1) = " << bResult << "(tuple == tuple3) = " << bResult1 << std::endl;
-		std::cout << tuple << std::endl;
-		std::cout << tuple4 << std::endl;
-		std::cout << tuple5 << std::endl;
-		std::cout << Tuple6 << std::endl;
-		std::cout << Tuple7 << std::endl;
-		std::cout << tuple8 << std::endl;
-		copycountertest();
-		std::cout <<"ReverseTuple" << ReverseTuple << std::endl;
-		std::cout <<"ReverseTuple2" << ReverseTuple2 << std::endl;
-		std::cout << popbackTuple << std::endl;
-		std::cout << "SelectList: " << SelectList << std::endl;
-		std::cout << "sortList: " << sortList << std::endl;
+			{
+				FPrint print("Tuple");
+				using namespace _25_;
+				auto tuple = _25_::makeTuple(1, 2.5f, "hello world");
+				auto tuple1(tuple);
+				auto tuple3 = _25_::makeTuple(2, 3.5, "nihao");
+				_25_::Tuple<> tuple4;
+				bool bResult = tuple == tuple1;
+				bool bResult1 = tuple == tuple3;
+				using T2 = _25_::FrontPop<_25_::PushBack<decltype(tuple), bool>>;
+				T2 tuple5(3.14f, "nihao tuple", false);
 
-		
+				auto Tuple6 = _25_::pushFront(tuple, 10);
+				auto Tuple7 = _25_::pushBack(tuple, 10);
+
+				_25_::Tuple<int, double, std::string> tuple8(17, 3.14f, "hello world!");
+				auto ReverseTuple = _25_::reverse(Tuple7);
+				auto popbackTuple = _25_::popBack(ReverseTuple);
+				auto copycountertest = []()
+				{
+					_25_::Tuple<CopyCounter<0>, CopyCounter<1>, CopyCounter<2>, CopyCounter<3>,
+						CopyCounter<4>> copies;
+					auto reversed = reverse(copies);
+					std::cout << "0: " << CopyCounter<0>::numCopies << " copies\n";
+					std::cout << "1: " << CopyCounter<1>::numCopies << " copies\n";
+					std::cout << "2: " << CopyCounter<2>::numCopies << " copies\n";
+					std::cout << "3: " << CopyCounter<3>::numCopies << " copies\n";
+					std::cout << "4: " << CopyCounter<4>::numCopies << " copies\n";
+				};
+
+				auto ReverseTuple2 = _25_::reverseN(Tuple7);
+				using List = _25_::MakeIndexList<3>;
+				auto SelectList = _25_::splat<2, 4>(ReverseTuple2);
+				auto sortList = _25_::sort<_25_::SmallerThanT>(ReverseTuple2);
+
+				Tuple<std::string, std::string, int, std::string> t("pi", "is roughy", 3, "\n");
+				std::cout << _25_::get<0>(tuple) << "; " << _25_::get<1>(tuple) << "; " << _25_::get<2>(tuple) << std::endl;
+				std::cout << _25_::get<0>(tuple1) << "; " << _25_::get<1>(tuple1) << "; " << _25_::get<2>(tuple1) << std::endl;
+				std::cout << "(tuple == tuple1) = " << bResult << "(tuple == tuple3) = " << bResult1 << std::endl;
+				std::cout << tuple << std::endl;
+				std::cout << tuple4 << std::endl;
+				std::cout << tuple5 << std::endl;
+				std::cout << Tuple6 << std::endl;
+				std::cout << Tuple7 << std::endl;
+				std::cout << tuple8 << std::endl;
+				copycountertest();
+				std::cout << "ReverseTuple" << ReverseTuple << std::endl;
+				std::cout << "ReverseTuple2" << ReverseTuple2 << std::endl;
+				std::cout << popbackTuple << std::endl;
+				std::cout << "SelectList: " << SelectList << std::endl;
+				std::cout << "sortList: " << sortList << std::endl;
+
+				std::cout << "sizeof tuple" << sizeof(T2) << std::endl;
+
+				std::tuple<int, float> a;
+			}
+			{
+				
+					FPrint print("Tuple");
+					struct A {
+						A() {
+							std::cout << "A()" << '\n';
+						}
+					};
+					struct B {
+						B() {
+							std::cout << "B()" << '\n';
+						}
+					};
+
+					_25_::Tuple<A, char, A, char, B> t1;
+					_25_1_::Tuple<A, char, A, char, B> t2;
+					_25_2_::Tuple<A, char, A, char, B> t3;
+					std::tuple<A, char, A, char, B> t4;
+					std::cout << "t1 = " << sizeof(t1) << std::endl;
+					std::cout << "t2 = " << sizeof(t2) << std::endl;
+					std::cout << "t3 = " << sizeof(t3) << std::endl;
+					std::cout << "t4 = " << sizeof(t4) << std::endl;
+
+					auto t5 = _25_2_::makeTuple(1, 2, 23);
+					std::cout << _25_2_::get<2>(t5) << std::endl;
+					std::cout << _25_2_::getN<2>(t5) << std::endl;
+			}
+			{
+				FPrint print("Tuple");
+				using namespace _25_2_;
+				auto tuple = _25_2_::makeTuple(1, 2.5f, "hello world");
+				auto tuple1(tuple);
+				auto tuple3 = _25_2_::makeTuple(2, 3.5, "nihao");
+				_25_2_::Tuple<> tuple4;
+				bool bResult = tuple == tuple1;
+				bool bResult1 = tuple == tuple3;
+				using T2 = _25_2_::FrontPop<_25_2_::PushBack<decltype(tuple), bool>>;
+				T2 tuple5(3.14f, "nihao tuple", false);
+
+				auto Tuple6 = _25_2_::pushFront(tuple, 10);
+				auto Tuple7 = _25_2_::pushBack(tuple, 10);
+
+				_25_2_::Tuple<int, double, std::string> tuple8(17, 3.14f, "hello world!");
+				auto ReverseTuple = _25_2_::reverse(Tuple7);
+				auto popbackTuple = _25_2_::popBack(ReverseTuple);
+				auto copycountertest = []()
+				{
+					_25_2_::Tuple<CopyCounter<0>, CopyCounter<1>, CopyCounter<2>, CopyCounter<3>,
+						CopyCounter<4>> copies;
+					auto reversed = reverse(copies);
+					std::cout << "0: " << CopyCounter<0>::numCopies << " copies\n";
+					std::cout << "1: " << CopyCounter<1>::numCopies << " copies\n";
+					std::cout << "2: " << CopyCounter<2>::numCopies << " copies\n";
+					std::cout << "3: " << CopyCounter<3>::numCopies << " copies\n";
+					std::cout << "4: " << CopyCounter<4>::numCopies << " copies\n";
+				};
+
+				auto ReverseTuple2 = _25_2_::reverseN(Tuple7);
+				using List = _25_2_::MakeIndexList<3>;
+				auto SelectList = _25_2_::splat<2, 4>(ReverseTuple2);
+				auto sortList = _25_2_::sort<_25_2_::SmallerThanT>(ReverseTuple2);
+
+				Tuple<std::string, std::string, int, std::string> t("pi", "is roughy", 3, "\n");
+				std::cout << _25_2_::get<0>(tuple) << "; " << _25_2_::get<1>(tuple) << "; " << _25_2_::get<2>(tuple) << std::endl;
+				std::cout << _25_2_::get<0>(tuple1) << "; " << _25_2_::get<1>(tuple1) << "; " << _25_2_::get<2>(tuple1) << std::endl;
+				std::cout << "(tuple == tuple1) = " << bResult << "(tuple == tuple3) = " << bResult1 << std::endl;
+				std::cout << tuple << std::endl;
+				std::cout << tuple4 << std::endl;
+				std::cout << tuple5 << std::endl;
+				std::cout << Tuple6 << std::endl;
+				std::cout << Tuple7 << std::endl;
+				std::cout << tuple8 << std::endl;
+				copycountertest();
+				std::cout << "ReverseTuple" << ReverseTuple << std::endl;
+				std::cout << "ReverseTuple2" << ReverseTuple2 << std::endl;
+				std::cout << popbackTuple << std::endl;
+				std::cout << "SelectList: " << SelectList << std::endl;
+				std::cout << "sortList: " << sortList << std::endl;
+
+				std::cout << "sizeof tuple" << sizeof(T2) << std::endl;
+
+				std::tuple<int, float> a;
+			}
+		}
 	}
 	return 0;
 }

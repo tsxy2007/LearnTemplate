@@ -6369,3 +6369,1602 @@ namespace _25_
 	}
 
 }
+
+namespace _25_1_
+{
+	template<typename... Elements>
+	class TypeList
+	{
+
+	};
+
+	template<>
+	class TypeList<>
+	{
+
+	};
+
+	template<typename List>
+	class FrontT;
+
+	template<typename Head, typename... Tail>
+	class FrontT<TypeList<Head, Tail...>>
+	{
+	public:
+		using Type = Head;
+	};
+
+	template<typename List>
+	using Front = typename FrontT<List>::Type;
+
+	template<typename List>
+	class FrontPopT;
+
+	template<typename Head, typename... Tail>
+	class FrontPopT<TypeList<Head, Tail...>>
+	{
+	public:
+		using Type = TypeList<Tail...>;
+	};
+
+	template<typename List>
+	using FrontPop = typename FrontPopT<List>::Type;
+
+	template<typename List, typename NewElement>
+	class FrontPushT;
+
+	template<typename... Elements, typename NewElement>
+	class FrontPushT<TypeList<Elements...>, NewElement>
+	{
+	public:
+		using Type = TypeList<NewElement, Elements...>;
+	};
+
+	template<typename List, typename NewElement>
+	using FrontPush = typename FrontPushT<List, NewElement>::Type;
+
+	template<typename List, unsigned N>
+	class NthElementT : public NthElementT<FrontPop<List>, N - 1>
+	{
+	public:
+	};
+
+	template<typename List>
+	class NthElementT<List, 0> : public FrontT<List>
+	{
+
+	};
+
+	template <typename List, unsigned N>
+	using NthElement = typename NthElementT<List, N>::Type;
+
+	template<typename List>
+	class LargestTypeT_old;
+
+	template<typename List>
+	class LargestTypeT_old
+	{
+	private:
+		using First = Front<List>;
+		using Rest = typename LargestTypeT_old<FrontPop<List>>::Type;
+	public:
+		using Type = _19_7_1_::IfThenElse<(sizeof(First) >= sizeof(Rest)), First, Rest>;
+	};
+
+	template<>
+	class LargestTypeT_old<TypeList<>>
+	{
+	public:
+		using Type = char;
+	};
+
+	template<typename List>
+	using LargestType_old = typename LargestTypeT_old<List>::Type;
+
+	template<typename List>
+	class IsEmpty
+	{
+	public:
+		static constexpr bool value = false;
+	};
+
+	template<>
+	class IsEmpty<TypeList<>>
+	{
+	public:
+		static constexpr bool value = true;
+	};
+
+	template<typename List, bool Empty = IsEmpty<List>::value>
+	class LargestTypeT;
+
+	template<typename List>
+	class LargestTypeT<List, false>
+	{
+	private:
+		using Contender = Front<List>;
+		using Best = typename LargestTypeT<FrontPop<List>>::Type;
+	public:
+		using Type = _19_7_1_::ifThenElseT<(sizeof(Contender) >= sizeof(Best)), Contender, Best>;
+	};
+
+	template<typename List>
+	class LargestTypeT<List, true>
+	{
+	public:
+		using Type = char;
+	};
+
+	template<typename List>
+	using LargestType = typename LargestTypeT<List>::Type;
+
+	template<typename List, typename NewElement>
+	class PushBackT_Old;
+
+	template<typename... Elements, typename NewElement>
+	class PushBackT_Old<TypeList<Elements...>, NewElement>
+	{
+	public:
+		using Type = TypeList<Elements..., NewElement>;
+	};
+
+	template<typename List, typename NewElement>
+	using PushBack_Old = typename PushBackT_Old<List, NewElement>::Type;
+
+	template<typename List, typename NewElement, bool = IsEmpty<List>::value>
+	class PushBackRecT;
+
+	template<typename List, typename NewElement>
+	class PushBackRecT<List, NewElement, false>
+	{
+		using Head = Front<List>;
+		using Tail = FrontPop<List>;
+		using NewTail = typename PushBackRecT<Tail, NewElement>::Type;
+	public:
+		using Type = FrontPush<NewTail, Head>;
+	};
+
+	template<typename List, typename NewElement>
+	class PushBackRecT<List, NewElement, true>
+	{
+	public:
+		using Type = FrontPush<List, NewElement>;
+	};
+
+	template<typename List, typename NewElement>
+	class PushBackT : public PushBackRecT<List, NewElement>
+	{};
+
+	template<typename List, typename NewElement>
+	using PushBack = typename PushBackT<List, NewElement>::Type;
+
+	template<typename List, bool = IsEmpty<List>::value>
+	class ReverseT;
+
+	template<typename List>
+	using Reverse = typename ReverseT<List>::Type;
+
+	template<typename List>
+	class ReverseT<List, false> : public  PushBackT<Reverse<FrontPop<List>>, Front<List>>
+	{
+
+	};
+
+	template<typename List>
+	class ReverseT<List, true>
+	{
+	public:
+		using Type = List;
+	};
+
+	template<typename List>
+	class PopBackT
+	{
+	public:
+		using Type = Reverse<FrontPop<Reverse<List>>>;
+	};
+
+	template<typename List>
+	using PopBack = typename PopBackT<List>::Type;
+
+	template<typename T>
+	struct AddConstT
+	{
+		using Type = T const;
+	};
+
+	template<typename T>
+	using AddConst = typename AddConstT<T>::Type;
+
+	template<typename List, template<typename T> typename MetaFun, bool = IsEmpty<List>::value>
+	class TransformT;
+#if 0
+	template<typename List, template<typename T> typename MetaFun>
+	class TransformT<List, MetaFun, false> : public FrontPushT<typename TransformT<FrontPop<List>, MetaFun>::Type, typename MetaFun<Front<List>>::Type>
+	{
+
+	};
+#else
+	template<typename... Elements, template<typename T> typename MetaFun>
+	class TransformT<TypeList<Elements...>, MetaFun, false>
+	{
+	public:
+		using Type = TypeList<typename MetaFun<Elements>::Type...>;
+	};
+#endif // 0
+
+
+	template<typename List, template<typename T> typename MetaFun>
+	class TransformT<List, MetaFun, true>
+	{
+	public:
+		using Type = List;
+	};
+
+	template<typename List, template<typename T> typename MetaFun = AddConstT>
+	using Transform = typename TransformT<List, MetaFun>::Type;
+
+	// 类型列表的累加
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I, bool = IsEmpty<List>::value>
+	class AccumulateT;
+
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
+	class AccumulateT<List, TypeFun, I, false> : public AccumulateT<FrontPop<List>, TypeFun, typename TypeFun<I, Front<List>>::Type>
+	{};
+
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
+	class AccumulateT<List, TypeFun, I, true>
+	{
+	public:
+		using Type = I;
+	};
+
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
+	using Accumulate = typename AccumulateT<List, TypeFun, I>::Type;
+
+	// 新的找寻最大值
+	template<typename T, typename U>
+	class LargestTypeT_New : public _19_7_1_::ifThenElseT<sizeof(T) >= sizeof(U), T, U>
+	{
+
+	};
+
+	template<typename List, bool = IsEmpty<List>::value>
+	class LargestTypeAccT;
+
+	template<typename List>
+	class LargestTypeAccT<List, false> : public AccumulateT<FrontPop<List>, LargestTypeT_New, Front<List>>
+	{
+
+	};
+
+	template<typename List>
+	class LargestTypeAccT<List, true>
+	{ };
+
+	template<typename List>
+	using LargestTypeAcc = typename LargestTypeAccT<List>::Type;
+
+	// 插入排序
+	template<typename List, template<typename T, typename U> typename Compare, bool = IsEmpty<List>::value>
+	class InsertionSortT;
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	using InsertionSort = typename InsertionSortT<List, Compare>::Type;
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare, bool = IsEmpty<List>::value>
+	class InsertSortedT;
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	using InsertSorted = typename InsertSortedT<List, Element, Compare>::Type;
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	class InsertionSortT<List, Compare, false>
+		: public InsertSortedT<InsertionSort<FrontPop<List>, Compare>, Front<List>, Compare>
+	{
+
+	};
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	class InsertionSortT<List, Compare, true>
+	{
+	public:
+		using Type = List;
+	};
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	class InsertSortedT<List, Element, Compare, false>
+	{
+		using NewTail = typename _19_7_1_::IfThenElse<Compare<Element, Front<List>>::value,
+			_19_7_1_::IdentityT<List>, InsertSortedT<FrontPop<List>, Element, Compare>>::Type;
+
+		using NewHead = _19_7_1_::IfThenElse<Compare<Element, Front<List>>::value, Element, Front<List>>;
+	public:
+		using Type = FrontPush<NewTail, NewHead>;
+	};
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	class InsertSortedT<List, Element, Compare, true> : public FrontPushT<List, Element>
+	{};
+
+	template<typename T, typename U>
+	struct SmallerThanT
+	{
+		static constexpr bool value = sizeof(T) < sizeof(U);
+	};
+
+	template<typename T, typename U>
+	struct BiggerThanT
+	{
+		static constexpr bool value = sizeof(T) > sizeof(U);
+	};
+
+
+	template<typename T, T Value>
+	struct CTValue
+	{
+		static constexpr T value = Value;
+	};
+
+
+	template<typename T, T...Values>
+	struct Valuelist
+	{
+
+	};
+
+	template<typename T, T... Values>
+	struct IsEmpty< Valuelist <T, Values...> >
+	{
+		static constexpr bool value = sizeof...(Values) == 0;
+	};
+
+	template<typename T, T Head, T... Tail>
+	struct FrontT<Valuelist<T, Head, Tail...>>
+	{
+		using Type = CTValue<T, Head>;
+		static constexpr T value = Head;
+	};
+
+	template<typename T, T Head, T... Tail>
+	struct FrontPopT<Valuelist<T, Head, Tail...>>
+	{
+		using Type = Valuelist<T, Tail...>;
+	};
+
+	template<typename T, T... Values, T New>
+	struct FrontPushT<Valuelist<T, Values...>, CTValue<T, New>>
+	{
+		using Type = Valuelist<T, New, Values...>;
+	};
+
+	template<typename T, T... Values, T New>
+	struct PushBackT<Valuelist<T, Values...>, CTValue<T, New>>
+	{
+		using Type = Valuelist<T, Values..., New>;
+	};
+
+	template<typename T, typename U>
+	struct GreaterThanT;
+
+	template<typename T, T First, T Second>
+	struct GreaterThanT<CTValue<T, First>, CTValue<T, Second>>
+	{
+		static constexpr bool value = First > Second;
+	};
+
+	template<typename T, typename U>
+	struct MultiplyT;
+
+	template<typename T, T Value1, T Value2>
+	struct MultiplyT<CTValue<T, Value1>, CTValue<T, Value2>>
+	{
+	public:
+		using Type = CTValue<T, Value1* Value2>;
+	};
+
+	template<typename T, typename U>
+	using Multiply = typename MultiplyT<T, U>::Type;
+
+	// 选取几个元素组成新的。
+	template<typename Types, typename Indices>
+	class SelectT;
+
+	template<typename Types, unsigned... Indices>
+	class SelectT<Types, Valuelist<unsigned, Indices...>>
+	{
+	public:
+		using Type = TypeList<NthElement<Types, Indices>...>;
+	};
+
+	template<typename Types, unsigned... Indices>
+	using Select = typename SelectT<Types, Valuelist<unsigned, Indices...>>::Type;
+
+	using Primes = Valuelist<int, 2, 3, 5, 7, 11>;
+
+	// cons-style TypeList
+	class Nil
+	{
+	};
+
+	template<typename HeadT, typename TailT = Nil>
+	class Cons
+	{
+	public:
+		using Head = HeadT;
+		using Tail = TailT;
+	};
+
+	using SignedIntegralTypes = Cons<signed char, Cons<short, Cons<int,
+		Cons<long, Cons<long long, Nil>>>>>;
+
+	template<typename List>
+	class FrontT
+	{
+	public:
+		using Type = typename List::Head;
+	};
+
+	template<typename List, typename Element>
+	class FrontPushT
+	{
+	public:
+		using Type = Cons<Element, List>;
+	};
+
+	template<typename List>
+	class FrontPopT
+	{
+	public:
+		using Type = typename List::Tail;
+	};
+
+	template<>
+	struct IsEmpty<Nil>
+	{
+		static constexpr bool value = true;
+	};
+
+	// Tuple
+
+	template<unsigned Height, typename T>
+	class TupleElt
+	{
+		T value;
+
+	public:
+
+		TupleElt() = default;
+
+		template<typename U>
+		TupleElt(U&& other) : value(std::forward<U>(other))
+		{}
+
+		T& get() { return value; }
+
+		T const& get() const { return value; }
+	};
+
+	template<typename... Types>
+	class Tuple;
+
+	template<typename Head, typename... Tail>
+	class Tuple<Head, Tail...> :private TupleElt<sizeof...(Tail), Head >, private Tuple<Tail...>
+	{
+		using HeadElt = TupleElt<sizeof...(Tail), Head>;
+		using _MyBase = Tuple<Tail...>;
+	public:
+		Tuple()
+		{
+
+		}
+
+		Tuple(Head const& inHead, Tuple<Tail...> const& inTail) : HeadElt(inHead), _MyBase(inTail...)
+		{
+
+		}
+
+		template<typename VHead, typename... VTail, typename = std::enable_if_t<sizeof...(VTail) == sizeof...(Tail)>>
+		Tuple(VHead&& vHead, VTail&&... vtail) : HeadElt(vHead), _MyBase(vtail...)
+		{
+
+		}
+
+		template<typename VHead, typename...VTail, typename = std::enable_if_t<sizeof...(VTail) == sizeof...(Tail)>>
+		Tuple(Tuple<VHead, VTail...> const& other) : HeadElt(other.getHead()), _MyBase(other.getTail())
+		{
+
+		}
+
+		Head& getHead() { return static_cast<HeadElt*>(this)->get(); }
+		Head const& getHead()const { return static_cast<HeadElt*>(this)->get(); }
+
+		Tuple<Tail...>& getTail() { return *this; }
+		Tuple<Tail...> const& getTail() const { return *this; }
+	};
+
+	template<>
+	class Tuple<>
+	{
+
+	};
+
+	template<unsigned N>
+	struct TupleGet
+	{
+		template<typename Head, typename... Tail>
+		static auto apply(Tuple<Head, Tail...> const& t)
+		{
+			return TupleGet<N - 1>::apply(t.getTail());
+		}
+	};
+
+	template<>
+	struct TupleGet<0>
+	{
+		template<typename Head, typename... Tail>
+		static Head const& apply(Tuple<Head, Tail...> const& t)
+		{
+			return t.getHead();
+		}
+	};
+
+	template<unsigned N, typename...Types>
+	auto get(Tuple<Types...> const& t)
+	{
+		return TupleGet<N>::apply(t);
+	}
+
+	template<typename... Types>
+	auto makeTuple(Types&&... elems)
+	{
+		return Tuple<std::decay_t<Types>...>(std::forward<Types>(elems)...);
+	}
+
+	// 比较
+	bool operator==(Tuple<> const&, Tuple<>const&)
+	{
+		return true;
+	}
+
+	template<typename Head1, typename...Tail1, typename Head2, typename...Tail2,
+		typename = std::enable_if_t<sizeof...(Tail1) == sizeof...(Tail2)>>
+		bool operator==(Tuple<Head1, Tail1...>const& lhs, Tuple<Head2, Tail2...>const& rhs)
+	{
+		return lhs.getHead() == rhs.getHead() && lhs.getTail() == rhs.getTail();
+	}
+
+	// 输出
+	void printTuple(std::ostream& strm, Tuple<> const&, bool isFirst = true)
+	{
+		strm << (isFirst ? "( )" : ")");
+	}
+
+	template<typename Head, typename... Tail>
+	void printTuple(std::ostream& strm, Tuple<Head, Tail...> const& t, bool isFirst = true)
+	{
+		strm << (isFirst ? "(" : ",");
+		strm << t.getHead();
+		printTuple(strm, t.getTail(), false);
+	}
+
+	template<typename... Types>
+	std::ostream& operator<<(std::ostream& strm, Tuple<Types...>const& t)
+	{
+		printTuple(strm, t);
+		return strm;
+	}
+
+	// 将元组用作类型列表
+	template<>
+	struct IsEmpty<Tuple<>>
+	{
+		static constexpr bool value = true;
+	};
+
+	template<typename Head, typename... Tail>
+	class FrontT<Tuple<Head, Tail...>>
+	{
+	public:
+		using Type = Head;
+	};
+
+	template<typename Head, typename... Tail>
+	class FrontPopT<Tuple<Head, Tail...>>
+	{
+	public:
+		using Type = Tuple<Tail...>;
+	};
+
+	template<typename... Types, typename Element>
+	class FrontPushT<Tuple<Types...>, Element>
+	{
+	public:
+		using Type = Tuple<Element, Types...>;
+	};
+
+	template<typename... Types, typename Element>
+	class PushBackT<Tuple<Types...>, Element>
+	{
+	public:
+		using Type = Tuple<Types..., Element>;
+	};
+
+	// 添加以及删除元素
+
+	template<typename... Types, typename V>
+	FrontPush<Tuple<Types...>, V> pushFront(Tuple<Types...> const& tuple, V const& value)
+	{
+		return FrontPush<Tuple<Types...>, V>(value, tuple);
+	}
+
+	template<typename V>
+	Tuple<V> pushBack(Tuple<> const&, V const& value)
+	{
+		return Tuple<V>(value);
+	}
+
+	template<typename Head, typename... Tail, typename V>
+	Tuple<Head, Tail..., V> pushBack(Tuple<Head, Tail...>const& tuple, V const& value)
+	{
+		return Tuple<Head, Tail..., V>(tuple.getHead(), pushBack(tuple.getTail(), value));
+	}
+
+	template<typename... Types>
+	FrontPop<Tuple<Types...>> frontPop(Tuple<Types...> const& tuple)
+	{
+		return tuple.getTail();
+	}
+
+	// 元组的反转
+	Tuple<> reverse(Tuple<> const& t)
+	{
+		return t;
+	}
+
+	template<typename Head, typename... Tail>
+	Reverse<Tuple<Head, Tail...>> reverse(Tuple<Head, Tail...> const& t)
+	{
+		return pushBack(reverse(t.getTail()), t.getHead());
+	}
+
+	// 删除最后一个元素
+
+	template<typename... Types>
+	PopBack<Tuple<Types...>> popBack(Tuple<Types...> const& t)
+	{
+		return reverse(frontPop(reverse(t)));
+	}
+
+	// 索引列表
+	template<int N>
+	struct CopyCounter
+	{
+		inline static unsigned numCopies = 0;
+		CopyCounter()
+		{
+
+		}
+
+		CopyCounter(CopyCounter const&)
+		{
+			++numCopies;
+		}
+	};
+
+	// 通过索引列表进行反转
+	template<unsigned N, typename Result = Valuelist<unsigned>>
+	struct MakeIndexListT : MakeIndexListT<N - 1, FrontPush<Result, CTValue<unsigned, N - 1>>>
+	{
+
+	};
+
+	template<typename Result>
+	struct MakeIndexListT<0, Result>
+	{
+		using Type = Result;
+	};
+
+	template<unsigned N>
+	using MakeIndexList = typename MakeIndexListT<N>::Type;
+
+	template<typename... Elements, unsigned... Indices>
+	auto reverseImpl(Tuple<Elements...> const& t, Valuelist<unsigned, Indices...>)
+	{
+		return makeTuple(get<Indices>(t)...);
+	}
+
+	template<typename... Elements>
+	auto reverseN(Tuple<Elements...> const& t)
+	{
+		return reverseImpl(t, Reverse<MakeIndexList<sizeof...(Elements)>>());
+	}
+
+	// 洗牌和选择
+
+	template<typename... Elements, unsigned... Indices>
+	auto select(Tuple<Elements...> const& t, Valuelist<unsigned, Indices...>)
+	{
+		return makeTuple(get<Indices>(t)...);
+	}
+
+	template<unsigned I, unsigned N, typename IndexList = Valuelist<unsigned>>
+	class ReplicatedIndexListT;
+
+	template<unsigned I, unsigned N, unsigned... Indices>
+	class ReplicatedIndexListT<I, N, Valuelist<unsigned, Indices...>>
+		:public ReplicatedIndexListT<I, N - 1, Valuelist<unsigned, Indices..., I>>
+	{};
+
+	template<unsigned I, unsigned... Indices>
+	class ReplicatedIndexListT<I, 0, Valuelist<unsigned, Indices...> >
+	{
+	public:
+		using Type = Valuelist<unsigned, Indices...>;
+	};
+
+	template<unsigned I, unsigned N>
+	using ReplicatedIndexList = typename ReplicatedIndexListT<I, N>::Type;
+
+	template<unsigned I, unsigned N, typename... Elements>
+	auto splat(Tuple<Elements...> const& t)
+	{
+		return select(t, ReplicatedIndexList<I, N>());
+	}
+
+	template<typename List, template<typename T, typename U> typename Func>
+	class MetafunOfNthElementT
+	{
+	public:
+		template<typename T, typename U>
+		class Apply;
+
+		template<unsigned N, unsigned M>
+		class Apply<CTValue<unsigned, M>, CTValue<unsigned, N>> :
+			public Func<NthElement<List, M>, NthElement<List, N>>
+		{
+		};
+	};
+
+	template<template<typename T, typename U> typename Compare, typename... Elements>
+	auto sort(Tuple<Elements...> const& t)
+	{
+		return select(t,
+			InsertionSort<MakeIndexList<sizeof...(Elements)>,
+			MetafunOfNthElementT<Tuple<Elements...>,
+			Compare>::template Apply>());
+	}
+	// 元组的展开
+	template<typename F, typename ... Elements, unsigned...Indices>
+	auto applyImpl(F f, Tuple<Elements...> const& t,
+		Valuelist<unsigned, Indices...>)->decltype(f(get<Indices>(t)...))
+	{
+		return f(get<Indices>(t)...);
+	}
+
+	template<typename F, typename... Elements, unsigned N = sizeof...(Elements)>
+	auto apply(F f, Tuple<Elements...> const& t)->decltype(applyImpl(f, t, MakeIndexList<N>()))
+	{
+		return applyImpl(f, t, MakeIndexList<N>());
+	}
+
+}
+
+namespace _25_2_
+{
+	template<typename... Elements>
+	class TypeList
+	{
+
+	};
+
+	template<>
+	class TypeList<>
+	{
+
+	};
+
+	template<typename List>
+	class FrontT;
+
+	template<typename Head, typename... Tail>
+	class FrontT<TypeList<Head, Tail...>>
+	{
+	public:
+		using Type = Head;
+	};
+
+	template<typename List>
+	using Front = typename FrontT<List>::Type;
+
+	template<typename List>
+	class FrontPopT;
+
+	template<typename Head, typename... Tail>
+	class FrontPopT<TypeList<Head, Tail...>>
+	{
+	public:
+		using Type = TypeList<Tail...>;
+	};
+
+	template<typename List>
+	using FrontPop = typename FrontPopT<List>::Type;
+
+	template<typename List, typename NewElement>
+	class FrontPushT;
+
+	template<typename... Elements, typename NewElement>
+	class FrontPushT<TypeList<Elements...>, NewElement>
+	{
+	public:
+		using Type = TypeList<NewElement, Elements...>;
+	};
+
+	template<typename List, typename NewElement>
+	using FrontPush = typename FrontPushT<List, NewElement>::Type;
+
+	template<typename List, unsigned N>
+	class NthElementT : public NthElementT<FrontPop<List>, N - 1>
+	{
+	public:
+	};
+
+	template<typename List>
+	class NthElementT<List, 0> : public FrontT<List>
+	{
+
+	};
+
+	template <typename List, unsigned N>
+	using NthElement = typename NthElementT<List, N>::Type;
+
+	template<typename List>
+	class LargestTypeT_old;
+
+	template<typename List>
+	class LargestTypeT_old
+	{
+	private:
+		using First = Front<List>;
+		using Rest = typename LargestTypeT_old<FrontPop<List>>::Type;
+	public:
+		using Type = _19_7_1_::IfThenElse<(sizeof(First) >= sizeof(Rest)), First, Rest>;
+	};
+
+	template<>
+	class LargestTypeT_old<TypeList<>>
+	{
+	public:
+		using Type = char;
+	};
+
+	template<typename List>
+	using LargestType_old = typename LargestTypeT_old<List>::Type;
+
+	template<typename List>
+	class IsEmpty
+	{
+	public:
+		static constexpr bool value = false;
+	};
+
+	template<>
+	class IsEmpty<TypeList<>>
+	{
+	public:
+		static constexpr bool value = true;
+	};
+
+	template<typename List, bool Empty = IsEmpty<List>::value>
+	class LargestTypeT;
+
+	template<typename List>
+	class LargestTypeT<List, false>
+	{
+	private:
+		using Contender = Front<List>;
+		using Best = typename LargestTypeT<FrontPop<List>>::Type;
+	public:
+		using Type = _19_7_1_::ifThenElseT<(sizeof(Contender) >= sizeof(Best)), Contender, Best>;
+	};
+
+	template<typename List>
+	class LargestTypeT<List, true>
+	{
+	public:
+		using Type = char;
+	};
+
+	template<typename List>
+	using LargestType = typename LargestTypeT<List>::Type;
+
+	template<typename List, typename NewElement>
+	class PushBackT_Old;
+
+	template<typename... Elements, typename NewElement>
+	class PushBackT_Old<TypeList<Elements...>, NewElement>
+	{
+	public:
+		using Type = TypeList<Elements..., NewElement>;
+	};
+
+	template<typename List, typename NewElement>
+	using PushBack_Old = typename PushBackT_Old<List, NewElement>::Type;
+
+	template<typename List, typename NewElement, bool = IsEmpty<List>::value>
+	class PushBackRecT;
+
+	template<typename List, typename NewElement>
+	class PushBackRecT<List, NewElement, false>
+	{
+		using Head = Front<List>;
+		using Tail = FrontPop<List>;
+		using NewTail = typename PushBackRecT<Tail, NewElement>::Type;
+	public:
+		using Type = FrontPush<NewTail, Head>;
+	};
+
+	template<typename List, typename NewElement>
+	class PushBackRecT<List, NewElement, true>
+	{
+	public:
+		using Type = FrontPush<List, NewElement>;
+	};
+
+	template<typename List, typename NewElement>
+	class PushBackT : public PushBackRecT<List, NewElement>
+	{};
+
+	template<typename List, typename NewElement>
+	using PushBack = typename PushBackT<List, NewElement>::Type;
+
+	template<typename List, bool = IsEmpty<List>::value>
+	class ReverseT;
+
+	template<typename List>
+	using Reverse = typename ReverseT<List>::Type;
+
+	template<typename List>
+	class ReverseT<List, false> : public  PushBackT<Reverse<FrontPop<List>>, Front<List>>
+	{
+
+	};
+
+	template<typename List>
+	class ReverseT<List, true>
+	{
+	public:
+		using Type = List;
+	};
+
+	template<typename List>
+	class PopBackT
+	{
+	public:
+		using Type = Reverse<FrontPop<Reverse<List>>>;
+	};
+
+	template<typename List>
+	using PopBack = typename PopBackT<List>::Type;
+
+	template<typename T>
+	struct AddConstT
+	{
+		using Type = T const;
+	};
+
+	template<typename T>
+	using AddConst = typename AddConstT<T>::Type;
+
+	template<typename List, template<typename T> typename MetaFun, bool = IsEmpty<List>::value>
+	class TransformT;
+#if 0
+	template<typename List, template<typename T> typename MetaFun>
+	class TransformT<List, MetaFun, false> : public FrontPushT<typename TransformT<FrontPop<List>, MetaFun>::Type, typename MetaFun<Front<List>>::Type>
+	{
+
+	};
+#else
+	template<typename... Elements, template<typename T> typename MetaFun>
+	class TransformT<TypeList<Elements...>, MetaFun, false>
+	{
+	public:
+		using Type = TypeList<typename MetaFun<Elements>::Type...>;
+	};
+#endif // 0
+
+
+	template<typename List, template<typename T> typename MetaFun>
+	class TransformT<List, MetaFun, true>
+	{
+	public:
+		using Type = List;
+	};
+
+	template<typename List, template<typename T> typename MetaFun = AddConstT>
+	using Transform = typename TransformT<List, MetaFun>::Type;
+
+	// 类型列表的累加
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I, bool = IsEmpty<List>::value>
+	class AccumulateT;
+
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
+	class AccumulateT<List, TypeFun, I, false> : public AccumulateT<FrontPop<List>, TypeFun, typename TypeFun<I, Front<List>>::Type>
+	{};
+
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
+	class AccumulateT<List, TypeFun, I, true>
+	{
+	public:
+		using Type = I;
+	};
+
+	template<typename List, template<typename X, typename Y> typename TypeFun, typename I>
+	using Accumulate = typename AccumulateT<List, TypeFun, I>::Type;
+
+	// 新的找寻最大值
+	template<typename T, typename U>
+	class LargestTypeT_New : public _19_7_1_::ifThenElseT<sizeof(T) >= sizeof(U), T, U>
+	{
+
+	};
+
+	template<typename List, bool = IsEmpty<List>::value>
+	class LargestTypeAccT;
+
+	template<typename List>
+	class LargestTypeAccT<List, false> : public AccumulateT<FrontPop<List>, LargestTypeT_New, Front<List>>
+	{
+
+	};
+
+	template<typename List>
+	class LargestTypeAccT<List, true>
+	{ };
+
+	template<typename List>
+	using LargestTypeAcc = typename LargestTypeAccT<List>::Type;
+
+	// 插入排序
+	template<typename List, template<typename T, typename U> typename Compare, bool = IsEmpty<List>::value>
+	class InsertionSortT;
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	using InsertionSort = typename InsertionSortT<List, Compare>::Type;
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare, bool = IsEmpty<List>::value>
+	class InsertSortedT;
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	using InsertSorted = typename InsertSortedT<List, Element, Compare>::Type;
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	class InsertionSortT<List, Compare, false>
+		: public InsertSortedT<InsertionSort<FrontPop<List>, Compare>, Front<List>, Compare>
+	{
+
+	};
+
+	template<typename List, template<typename T, typename U> typename Compare>
+	class InsertionSortT<List, Compare, true>
+	{
+	public:
+		using Type = List;
+	};
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	class InsertSortedT<List, Element, Compare, false>
+	{
+		using NewTail = typename _19_7_1_::IfThenElse<Compare<Element, Front<List>>::value,
+			_19_7_1_::IdentityT<List>, InsertSortedT<FrontPop<List>, Element, Compare>>::Type;
+
+		using NewHead = _19_7_1_::IfThenElse<Compare<Element, Front<List>>::value, Element, Front<List>>;
+	public:
+		using Type = FrontPush<NewTail, NewHead>;
+	};
+
+	template<typename List, typename Element, template<typename T, typename U>typename Compare>
+	class InsertSortedT<List, Element, Compare, true> : public FrontPushT<List, Element>
+	{};
+
+	template<typename T, typename U>
+	struct SmallerThanT
+	{
+		static constexpr bool value = sizeof(T) < sizeof(U);
+	};
+
+	template<typename T, typename U>
+	struct BiggerThanT
+	{
+		static constexpr bool value = sizeof(T) > sizeof(U);
+	};
+
+
+	template<typename T, T Value>
+	struct CTValue
+	{
+		static constexpr T value = Value;
+	};
+
+
+	template<typename T, T...Values>
+	struct Valuelist
+	{
+
+	};
+
+	template<typename T, T... Values>
+	struct IsEmpty< Valuelist <T, Values...> >
+	{
+		static constexpr bool value = sizeof...(Values) == 0;
+	};
+
+	template<typename T, T Head, T... Tail>
+	struct FrontT<Valuelist<T, Head, Tail...>>
+	{
+		using Type = CTValue<T, Head>;
+		static constexpr T value = Head;
+	};
+
+	template<typename T, T Head, T... Tail>
+	struct FrontPopT<Valuelist<T, Head, Tail...>>
+	{
+		using Type = Valuelist<T, Tail...>;
+	};
+
+	template<typename T, T... Values, T New>
+	struct FrontPushT<Valuelist<T, Values...>, CTValue<T, New>>
+	{
+		using Type = Valuelist<T, New, Values...>;
+	};
+
+	template<typename T, T... Values, T New>
+	struct PushBackT<Valuelist<T, Values...>, CTValue<T, New>>
+	{
+		using Type = Valuelist<T, Values..., New>;
+	};
+
+	template<typename T, typename U>
+	struct GreaterThanT;
+
+	template<typename T, T First, T Second>
+	struct GreaterThanT<CTValue<T, First>, CTValue<T, Second>>
+	{
+		static constexpr bool value = First > Second;
+	};
+
+	template<typename T, typename U>
+	struct MultiplyT;
+
+	template<typename T, T Value1, T Value2>
+	struct MultiplyT<CTValue<T, Value1>, CTValue<T, Value2>>
+	{
+	public:
+		using Type = CTValue<T, Value1* Value2>;
+	};
+
+	template<typename T, typename U>
+	using Multiply = typename MultiplyT<T, U>::Type;
+
+	// 选取几个元素组成新的。
+	template<typename Types, typename Indices>
+	class SelectT;
+
+	template<typename Types, unsigned... Indices>
+	class SelectT<Types, Valuelist<unsigned, Indices...>>
+	{
+	public:
+		using Type = TypeList<NthElement<Types, Indices>...>;
+	};
+
+	template<typename Types, unsigned... Indices>
+	using Select = typename SelectT<Types, Valuelist<unsigned, Indices...>>::Type;
+
+	using Primes = Valuelist<int, 2, 3, 5, 7, 11>;
+
+	// cons-style TypeList
+	class Nil
+	{
+	};
+
+	template<typename HeadT, typename TailT = Nil>
+	class Cons
+	{
+	public:
+		using Head = HeadT;
+		using Tail = TailT;
+	};
+
+	using SignedIntegralTypes = Cons<signed char, Cons<short, Cons<int,
+		Cons<long, Cons<long long, Nil>>>>>;
+
+	template<typename List>
+	class FrontT
+	{
+	public:
+		using Type = typename List::Head;
+	};
+
+	template<typename List, typename Element>
+	class FrontPushT
+	{
+	public:
+		using Type = Cons<Element, List>;
+	};
+
+	template<typename List>
+	class FrontPopT
+	{
+	public:
+		using Type = typename List::Tail;
+	};
+
+	template<>
+	struct IsEmpty<Nil>
+	{
+		static constexpr bool value = true;
+	};
+
+	// Tuple
+
+	template<unsigned Height, typename T, bool = std::is_class_v<T> && !std::is_final_v<T>>
+	class TupleElt;
+
+	template<unsigned Height, typename T>
+	class TupleElt<Height, T, false>
+	{
+		T value;
+
+	public:
+
+		TupleElt() = default;
+
+		template<typename U>
+		TupleElt(U&& other) : value(std::forward<U>(other))
+		{}
+
+		T& get() { return value; }
+
+		T const& get() const { return value; }
+	};
+
+	template<unsigned Height, typename T>
+	class TupleElt<Height, T, true> : private T
+	{
+	public:
+
+		TupleElt() = default;
+
+		template<typename U>
+		TupleElt(U&& other) : T(std::forward<U>(other))
+		{}
+
+		T& get() { return *this; }
+
+		T const& get() const { return *this; }
+	};
+
+	template<typename... Types>
+	class Tuple;
+
+	template<typename Head, typename... Tail>
+	class Tuple<Head, Tail...> : private TupleElt<sizeof...(Tail), Head >, private Tuple<Tail...>
+	{
+		using HeadElt = TupleElt<sizeof...(Tail), Head>;
+		using _MyBase = Tuple<Tail...>;
+	public:
+		Tuple()
+		{
+
+		}
+
+		Tuple(Head const& inHead, Tuple<Tail...> const& inTail) 
+			: HeadElt(inHead),
+			_MyBase(inTail...)
+		{
+
+		}
+
+		template<typename VHead, typename... VTail, typename = std::enable_if_t<sizeof...(VTail) == sizeof...(Tail)>>
+		Tuple(VHead&& vHead, VTail&&... vtail) : HeadElt(std::forward<VHead>(vHead)), _MyBase(std::forward<VTail>(vtail)...)
+		{
+
+		}
+
+		template<typename VHead, typename...VTail, typename = std::enable_if_t<sizeof...(VTail) == sizeof...(Tail)>>
+		Tuple(Tuple<VHead, VTail...> const& other) : HeadElt(other.getHead()), _MyBase(other.getTail())
+		{
+
+		}
+
+		Head& getHead() { return static_cast<HeadElt*>(this)->get(); }
+		Head const& getHead()const { return static_cast<HeadElt const*>(this)->get(); }
+
+		Tuple<Tail...>& getTail() { return *this; }
+		Tuple<Tail...> const& getTail() const { return *this; }
+
+		template<unsigned I, typename... Elements>
+		friend auto getN(Tuple<Elements...>& t)
+			-> decltype(getHeight<sizeof...(Elements) - I - 1>(t));
+	};
+
+	template<>
+	class Tuple<>
+	{
+
+	};
+
+	template<unsigned N>
+	struct TupleGet
+	{
+		template<typename Head, typename... Tail>
+		static auto apply(Tuple<Head, Tail...> const& t)
+		{
+			return TupleGet<N - 1>::apply(t.getTail());
+		}
+	};
+
+	template<>
+	struct TupleGet<0>
+	{
+		template<typename Head, typename... Tail>
+		static Head const& apply(Tuple<Head, Tail...> const& t)
+		{
+			return t.getHead();
+		}
+	};
+
+	template<unsigned N, typename...Types>
+	auto get(Tuple<Types...> const& t)
+	{
+		return TupleGet<N>::apply(t);
+	}
+
+
+	template<unsigned H, typename T>
+	T& getHeight(TupleElt<H, T>& te)
+	{
+		return te.get();
+	}
+
+	template<unsigned I,typename... Elements>
+	auto getN(Tuple<Elements...>& t)->decltype(getHeight<sizeof...(Elements) - I - 1>(t))
+	{
+		return getHeight<sizeof...(Elements) - 1 - I>(t);
+	}
+
+
+	template<typename... Types>
+	auto makeTuple(Types&&... elems)
+	{
+		return Tuple<std::decay_t<Types>...>(std::forward<Types>(elems)...);
+	}
+
+	// 比较
+	bool operator==(Tuple<> const&, Tuple<>const&)
+	{
+		return true;
+	}
+
+	template<typename Head1, typename...Tail1, typename Head2, typename...Tail2,
+		typename = std::enable_if_t<sizeof...(Tail1) == sizeof...(Tail2)>>
+		bool operator==(Tuple<Head1, Tail1...>const& lhs, Tuple<Head2, Tail2...>const& rhs)
+	{
+		return lhs.getHead() == rhs.getHead() && lhs.getTail() == rhs.getTail();
+	}
+
+	// 输出
+	void printTuple(std::ostream& strm, Tuple<> const&, bool isFirst = true)
+	{
+		strm << (isFirst ? "( )" : ")");
+	}
+
+	template<typename Head, typename... Tail>
+	void printTuple(std::ostream& strm, Tuple<Head, Tail...> const& t, bool isFirst = true)
+	{
+		strm << (isFirst ? "(" : ",");
+		strm << t.getHead();
+		printTuple(strm, t.getTail(), false);
+	}
+
+	template<typename... Types>
+	std::ostream& operator<<(std::ostream& strm, Tuple<Types...>const& t)
+	{
+		printTuple(strm, t);
+		return strm;
+	}
+
+	// 将元组用作类型列表
+	template<>
+	struct IsEmpty<Tuple<>>
+	{
+		static constexpr bool value = true;
+	};
+
+	template<typename Head, typename... Tail>
+	class FrontT<Tuple<Head, Tail...>>
+	{
+	public:
+		using Type = Head;
+	};
+
+	template<typename Head, typename... Tail>
+	class FrontPopT<Tuple<Head, Tail...>>
+	{
+	public:
+		using Type = Tuple<Tail...>;
+	};
+
+	template<typename... Types, typename Element>
+	class FrontPushT<Tuple<Types...>, Element>
+	{
+	public:
+		using Type = Tuple<Element, Types...>;
+	};
+
+	template<typename... Types, typename Element>
+	class PushBackT<Tuple<Types...>, Element>
+	{
+	public:
+		using Type = Tuple<Types..., Element>;
+	};
+
+	// 添加以及删除元素
+
+	template<typename... Types, typename V>
+	FrontPush<Tuple<Types...>, V> pushFront(Tuple<Types...> const& tuple, V const& value)
+	{
+		return FrontPush<Tuple<Types...>, V>(value, tuple);
+	}
+
+	template<typename V>
+	Tuple<V> pushBack(Tuple<> const&, V const& value)
+	{
+		return Tuple<V>(value);
+	}
+
+	template<typename Head, typename... Tail, typename V>
+	Tuple<Head, Tail..., V> pushBack(Tuple<Head, Tail...>const& tuple, V const& value)
+	{
+		return Tuple<Head, Tail..., V>(tuple.getHead(), pushBack(tuple.getTail(), value));
+	}
+
+	template<typename... Types>
+	FrontPop<Tuple<Types...>> frontPop(Tuple<Types...> const& tuple)
+	{
+		return tuple.getTail();
+	}
+
+	// 元组的反转
+	Tuple<> reverse(Tuple<> const& t)
+	{
+		return t;
+	}
+
+	template<typename Head, typename... Tail>
+	Reverse<Tuple<Head, Tail...>> reverse(Tuple<Head, Tail...> const& t)
+	{
+		return pushBack(reverse(t.getTail()), t.getHead());
+	}
+
+	// 删除最后一个元素
+
+	template<typename... Types>
+	PopBack<Tuple<Types...>> popBack(Tuple<Types...> const& t)
+	{
+		return reverse(frontPop(reverse(t)));
+	}
+
+	// 索引列表
+	template<int N>
+	struct CopyCounter
+	{
+		inline static unsigned numCopies = 0;
+		CopyCounter()
+		{
+
+		}
+
+		CopyCounter(CopyCounter const&)
+		{
+			++numCopies;
+		}
+	};
+
+	// 通过索引列表进行反转
+	template<unsigned N, typename Result = Valuelist<unsigned>>
+	struct MakeIndexListT : MakeIndexListT<N - 1, FrontPush<Result, CTValue<unsigned, N - 1>>>
+	{
+
+	};
+
+	template<typename Result>
+	struct MakeIndexListT<0, Result>
+	{
+		using Type = Result;
+	};
+
+	template<unsigned N>
+	using MakeIndexList = typename MakeIndexListT<N>::Type;
+
+	template<typename... Elements, unsigned... Indices>
+	auto reverseImpl(Tuple<Elements...> const& t, Valuelist<unsigned, Indices...>)
+	{
+		return makeTuple(get<Indices>(t)...);
+	}
+
+	template<typename... Elements>
+	auto reverseN(Tuple<Elements...> const& t)
+	{
+		return reverseImpl(t, Reverse<MakeIndexList<sizeof...(Elements)>>());
+	}
+
+	// 洗牌和选择
+
+	template<typename... Elements, unsigned... Indices>
+	auto select(Tuple<Elements...> const& t, Valuelist<unsigned, Indices...>)
+	{
+		return makeTuple(get<Indices>(t)...);
+	}
+
+	template<unsigned I, unsigned N, typename IndexList = Valuelist<unsigned>>
+	class ReplicatedIndexListT;
+
+	template<unsigned I, unsigned N, unsigned... Indices>
+	class ReplicatedIndexListT<I, N, Valuelist<unsigned, Indices...>>
+		:public ReplicatedIndexListT<I, N - 1, Valuelist<unsigned, Indices..., I>>
+	{};
+
+	template<unsigned I, unsigned... Indices>
+	class ReplicatedIndexListT<I, 0, Valuelist<unsigned, Indices...> >
+	{
+	public:
+		using Type = Valuelist<unsigned, Indices...>;
+	};
+
+	template<unsigned I, unsigned N>
+	using ReplicatedIndexList = typename ReplicatedIndexListT<I, N>::Type;
+
+	template<unsigned I, unsigned N, typename... Elements>
+	auto splat(Tuple<Elements...> const& t)
+	{
+		return select(t, ReplicatedIndexList<I, N>());
+	}
+
+	template<typename List, template<typename T, typename U> typename Func>
+	class MetafunOfNthElementT
+	{
+	public:
+		template<typename T, typename U>
+		class Apply;
+
+		template<unsigned N, unsigned M>
+		class Apply<CTValue<unsigned, M>, CTValue<unsigned, N>> :
+			public Func<NthElement<List, M>, NthElement<List, N>>
+		{
+		};
+	};
+
+	template<template<typename T, typename U> typename Compare, typename... Elements>
+	auto sort(Tuple<Elements...> const& t)
+	{
+		return select(t,
+			InsertionSort<MakeIndexList<sizeof...(Elements)>,
+			MetafunOfNthElementT<Tuple<Elements...>,
+			Compare>::template Apply>());
+	}
+	// 元组的展开
+	template<typename F, typename ... Elements, unsigned...Indices>
+	auto applyImpl(F f, Tuple<Elements...> const& t,
+		Valuelist<unsigned, Indices...>)->decltype(f(get<Indices>(t)...))
+	{
+		return f(get<Indices>(t)...);
+	}
+
+	template<typename F, typename... Elements, unsigned N = sizeof...(Elements)>
+	auto apply(F f, Tuple<Elements...> const& t)->decltype(applyImpl(f, t, MakeIndexList<N>()))
+	{
+		return applyImpl(f, t, MakeIndexList<N>());
+	}
+
+}
