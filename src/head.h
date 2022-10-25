@@ -7660,11 +7660,11 @@ namespace _25_2_
 
 		Tuple(Head const& inHead, Tuple<Tail...> const& inTail) 
 			: HeadElt(inHead),
-			_MyBase(inTail...)
+			_MyBase(inTail)
 		{
 
 		}
-
+		
 		template<typename VHead, typename... VTail, typename = std::enable_if_t<sizeof...(VTail) == sizeof...(Tail)>>
 		Tuple(VHead&& vHead, VTail&&... vtail) : HeadElt(std::forward<VHead>(vHead)), _MyBase(std::forward<VTail>(vtail)...)
 		{

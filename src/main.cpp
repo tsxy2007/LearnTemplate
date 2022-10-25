@@ -1530,7 +1530,7 @@ std::cout << *iva << " " << *ila << std::endl;
 			std::array<int, 4> ia{ 1,2,3,4 };
 			std::array<int, 4> ib{ 10,10,10,10 };
 			// 一下代码vs2019报错
-#if 0
+#if 1
 			std::cout << "vs2019 編譯器bug" << std::endl;
 #else
 			int result1 = _23_1_3_2_::dotProduct(ia, ib);
@@ -1673,33 +1673,7 @@ std::cout << *iva << " " << *ila << std::endl;
 
 				std::tuple<int, float> a;
 			}
-			{
-				
-					FPrint print("Tuple");
-					struct A {
-						A() {
-							std::cout << "A()" << '\n';
-						}
-					};
-					struct B {
-						B() {
-							std::cout << "B()" << '\n';
-						}
-					};
-
-					_25_::Tuple<A, char, A, char, B> t1;
-					_25_1_::Tuple<A, char, A, char, B> t2;
-					_25_2_::Tuple<A, char, A, char, B> t3;
-					std::tuple<A, char, A, char, B> t4;
-					std::cout << "t1 = " << sizeof(t1) << std::endl;
-					std::cout << "t2 = " << sizeof(t2) << std::endl;
-					std::cout << "t3 = " << sizeof(t3) << std::endl;
-					std::cout << "t4 = " << sizeof(t4) << std::endl;
-
-					auto t5 = _25_2_::makeTuple(1, 2, 23);
-					std::cout << _25_2_::get<2>(t5) << std::endl;
-					std::cout << _25_2_::getN<2>(t5) << std::endl;
-			}
+			
 			{
 				FPrint print("Tuple");
 				using namespace _25_2_;
@@ -1737,7 +1711,7 @@ std::cout << *iva << " " << *ila << std::endl;
 
 				Tuple<std::string, std::string, int, std::string> t("pi", "is roughy", 3, "\n");
 				std::cout << _25_2_::get<0>(tuple) << "; " << _25_2_::get<1>(tuple) << "; " << _25_2_::get<2>(tuple) << std::endl;
-				std::cout << _25_2_::get<0>(tuple1) << "; " << _25_2_::get<1>(tuple1) << "; " << _25_2_::get<2>(tuple1) << std::endl;
+				std::cout << _25_2_::getN<0>(tuple1) << "; " << _25_2_::getN<1>(tuple1) << "; " << _25_2_::getN<2>(tuple1) << std::endl;
 				std::cout << "(tuple == tuple1) = " << bResult << "(tuple == tuple3) = " << bResult1 << std::endl;
 				std::cout << tuple << std::endl;
 				std::cout << tuple4 << std::endl;
@@ -1755,6 +1729,34 @@ std::cout << *iva << " " << *ila << std::endl;
 				std::cout << "sizeof tuple" << sizeof(T2) << std::endl;
 
 				std::tuple<int, float> a;
+			}
+
+			{
+
+				FPrint print("Tuple");
+				struct A {
+					A() {
+						std::cout << "A()" << '\n';
+					}
+				};
+				struct B {
+					B() {
+						std::cout << "B()" << '\n';
+					}
+				};
+
+				_25_::Tuple<A, char, A, char, B> t1;
+				_25_1_::Tuple<A, char, A, char, B> t2;
+				_25_2_::Tuple<A, char, A, char, B> t3;
+				std::tuple<A, char, A, char, B> t4;
+				std::cout << "t1 = " << sizeof(t1) << std::endl;
+				std::cout << "t2 = " << sizeof(t2) << std::endl;
+				std::cout << "t3 = " << sizeof(t3) << std::endl;
+				std::cout << "t4 = " << sizeof(t4) << std::endl;
+
+				auto t5 = _25_2_::makeTuple(1, 2, 23);
+				std::cout << _25_2_::get<2>(t5) << std::endl;
+				std::cout << _25_2_::getN<2>(t5) << std::endl;
 			}
 		}
 	}
