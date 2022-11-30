@@ -6215,7 +6215,8 @@ namespace _25_
 	template<typename... Types,typename V>
 	FrontPush<Tuple<Types...>,V> pushFront(Tuple<Types...> const& tuple, V const& value)
 	{
-		return FrontPush<Tuple<Types...>, V>(value, tuple);
+		using T = FrontPush<Tuple<Types...>, V>;
+		return T(value, tuple);
 	}
 
 	template<typename V>

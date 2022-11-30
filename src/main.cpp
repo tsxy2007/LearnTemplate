@@ -1704,6 +1704,18 @@ std::cout << *iva << " " << *ila << std::endl;
 					std::cout << "4: " << CopyCounter<4>::numCopies << " copies\n";
 				};
 
+				auto copycountertest2 = []()
+				{
+					_25_2_::Tuple<CopyCounter<0>, CopyCounter<1>, CopyCounter<2>, CopyCounter<3>,
+						CopyCounter<4>> copies;
+					auto reversed = _25_2_::makeTuple(_25_2_::get<4>(copies), _25_2_::get<3>(copies), _25_2_::get<2>(copies), _25_2_::get<1>(copies), _25_2_::get<0>(copies));
+					std::cout << "0: " << CopyCounter<0>::numCopies << " copies\n";
+					std::cout << "1: " << CopyCounter<1>::numCopies << " copies\n";
+					std::cout << "2: " << CopyCounter<2>::numCopies << " copies\n";
+					std::cout << "3: " << CopyCounter<3>::numCopies << " copies\n";
+					std::cout << "4: " << CopyCounter<4>::numCopies << " copies\n";
+				};
+
 				auto ReverseTuple2 = _25_2_::reverseN(Tuple7);
 				using List = _25_2_::MakeIndexList<3>;
 				auto SelectList = _25_2_::splat<2, 4>(ReverseTuple2);
@@ -1719,7 +1731,8 @@ std::cout << *iva << " " << *ila << std::endl;
 				std::cout << Tuple6 << std::endl;
 				std::cout << Tuple7 << std::endl;
 				std::cout << tuple8 << std::endl;
-				copycountertest();
+				//copycountertest();
+				copycountertest2();
 				std::cout << "ReverseTuple" << ReverseTuple << std::endl;
 				std::cout << "ReverseTuple2" << ReverseTuple2 << std::endl;
 				std::cout << popbackTuple << std::endl;
